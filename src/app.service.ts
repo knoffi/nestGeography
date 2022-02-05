@@ -1,11 +1,13 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { map } from 'rxjs/operators';
 
-export type Attack = { attack: string };
 @Injectable()
 export class AppService {
     constructor(private httpService: HttpService) {}
-    getPokeAttack(): Attack {
-        return { attack: 'random attack' };
+    getPokeAttack() {
+        return this.httpService
+            .get('https://pokeapi.co/api/v2/pokemon/25')
+            .pipe(map((res) => res.data.name));
     }
 }
