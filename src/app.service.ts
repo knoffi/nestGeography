@@ -1,9 +1,11 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 
-export type HelloWorld = { message: string };
+export type Attack = { attack: string };
 @Injectable()
 export class AppService {
-    getHello(): HelloWorld {
-        return { message: 'Hello My Dear World!' };
+    constructor(private httpService: HttpService) {}
+    getPokeAttack(): Attack {
+        return { attack: 'random attack' };
     }
 }
