@@ -3,6 +3,7 @@ import {
     Get,
     HttpException,
     HttpStatus,
+    Inject,
     Param,
 } from '@nestjs/common';
 import { IAppService, NameHolder } from './app.service';
@@ -10,7 +11,9 @@ import { IAppService, NameHolder } from './app.service';
 @Controller()
 export class AppController {
     private static readonly MAX_POKEMON_ID = 10220;
-    constructor(private readonly appService: IAppService) {}
+    constructor(
+        @Inject('IAppService') private readonly appService: IAppService
+    ) {}
     @Get(':id')
     async getPokeName(@Param('id') id: string): Promise<NameHolder> {
         switch (this.testPokemonId(id)) {
