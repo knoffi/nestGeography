@@ -19,6 +19,13 @@ export class AppController {
     }
 
     testPokemonId(id: string): boolean {
-        return true;
+        const withoutNumbers = id.replace(/\d/g, '');
+        const isNoNumber = withoutNumbers.length > 0;
+        if (isNoNumber) {
+            return false;
+        } else {
+            const idNumber = parseInt(id);
+            return 0 < idNumber && idNumber <= AppController.MAX_POKEMON_ID;
+        }
     }
 }
