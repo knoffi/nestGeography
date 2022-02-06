@@ -1,4 +1,4 @@
-import { IAppService, NameHolder } from './app.service';
+import { IAppService, NameHolder } from './poke.service';
 
 export class AppServiceMock implements IAppService {
     getPokeAttack() {

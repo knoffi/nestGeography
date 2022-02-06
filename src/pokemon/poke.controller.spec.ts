@@ -1,12 +1,12 @@
 import { HttpException } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppServiceMock } from './app.service.mock';
+import { AppController } from './poke.controller';
+import { AppServiceMock } from './poke.service.mock';
 
 // needs in package.json:   "jest:": {"restoreMocks":true}, otherwise reset spys with beforeEach(...)
-describe('AppController', () => {
+describe('PokeController', () => {
     const appService = new AppServiceMock();
     const appController = new AppController(appService);
-    describe('APP CONTROLLER id validation', () => {
+    describe('id validation', () => {
         it('for empty string', () => {
             expect(appController.testPokemonId('')).toEqual('no number');
         });
@@ -22,7 +22,7 @@ describe('AppController', () => {
             expect(appController.testPokemonId('150')).toEqual('valid');
         });
     });
-    describe('app controller response', () => {
+    describe('response', () => {
         it('valid id', async () => {
             const spy = jest.spyOn(AppController.prototype, 'testPokemonId');
             const body = await appController.getPokeName('150');

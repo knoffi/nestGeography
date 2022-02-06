@@ -6,9 +6,9 @@ import {
     Inject,
     Param,
 } from '@nestjs/common';
-import { IAppService, NameHolder } from './app.service';
+import { IAppService, NameHolder } from './poke.service';
 
-@Controller()
+@Controller('pokemon')
 export class AppController {
     private static readonly MAX_POKEMON_ID = 10220;
     constructor(

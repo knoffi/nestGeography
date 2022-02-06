@@ -1,11 +1,8 @@
-import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { GeographyModule } from './geography/geography.module';
+import { PokeModule } from './pokemon/poke.module';
 
 @Module({
-    imports: [HttpModule],
-    controllers: [AppController],
-    providers: [{ provide: 'IAppService', useClass: AppService }],
+    imports: [PokeModule, GeographyModule],
 })
 export class AppModule {}
