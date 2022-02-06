@@ -8,7 +8,6 @@ describe('AppController', () => {
     const appController = new AppController(appService);
     describe('APP CONTROLLER id validation', () => {
         it('for empty string', () => {
-            console.log(appController.testPokemonId(''));
             expect(appController.testPokemonId('')).toEqual('no number');
         });
         it('for invalid number', () => {

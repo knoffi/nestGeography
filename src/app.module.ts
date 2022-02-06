@@ -6,6 +6,6 @@ import { AppService } from './app.service';
 @Module({
     imports: [HttpModule],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [{ provide: 'IAppService', useClass: AppService }],
 })
 export class AppModule {}
