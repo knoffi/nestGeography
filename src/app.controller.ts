@@ -5,12 +5,12 @@ import {
     HttpStatus,
     Param,
 } from '@nestjs/common';
-import { AppService, NameHolder } from './app.service';
+import { IAppService, NameHolder } from './app.service';
 
 @Controller()
 export class AppController {
     private static readonly MAX_POKEMON_ID = 10220;
-    constructor(private readonly appService: AppService) {}
+    constructor(private readonly appService: IAppService) {}
     @Get(':id')
     async getPokeName(@Param() params): Promise<NameHolder> {
         switch (this.testPokemonId(params.id)) {
@@ -39,7 +39,8 @@ export class AppController {
     testPokemonId(id: string): 'valid' | 'no number' | 'out of range' {
         const withoutNumbers = id.replace(/\d/g, '');
         const isNoNumber = withoutNumbers.length > 0;
-        if (isNoNumber) {
+        const isEmpyString = id.length === 0;
+        if (isNoNumber || isEmpyString) {
             return 'no number';
         } else {
             const idNumber = parseInt(id);

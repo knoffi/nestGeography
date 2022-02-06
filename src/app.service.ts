@@ -5,8 +5,11 @@ import { map } from 'rxjs/operators';
 export type NameHolder = { name: string; url: string };
 type MoveHolder = { move: NameHolder };
 type Moves = { moves: Array<MoveHolder> };
+export interface IAppService {
+    getPokeAttack: (id: string) => Promise<NameHolder> | NameHolder;
+}
 @Injectable()
-export class AppService {
+export class AppService implements IAppService {
     constructor(private httpService: HttpService) {}
     private static readonly DEFAULT_MOVE = {
         move: {

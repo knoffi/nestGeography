@@ -1,22 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppServiceMock } from './app.service.mock';
 
 describe('AppController', () => {
-  let appController: AppController;
+    const appService = new AppServiceMock();
+    const appController = new AppController(appService);
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-
-    appController = app.get<AppController>(AppController);
-  });
-
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    describe('app controller', () => {
+        it('id test for empty string', () => {
+            console.log(appController.testPokemonId(''));
+            expect(appController.testPokemonId('')).toEqual('no number');
+        });
+        it('id test for invalid number', () => {
+            expect(appController.testPokemonId('999999')).toEqual(
+                'out of range'
+            );
+        });
+        it('id test for 0', () => {
+            expect(appController.testPokemonId('0')).toEqual('out of range');
+        });
+        it('id test for valid number', () => {
+            expect(appController.testPokemonId('150')).toEqual('valid');
+        });
     });
-  });
 });
