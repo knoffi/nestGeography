@@ -12,10 +12,10 @@ export class AppController {
     private static readonly MAX_POKEMON_ID = 10220;
     constructor(private readonly appService: IAppService) {}
     @Get(':id')
-    async getPokeName(@Param() params): Promise<NameHolder> {
-        switch (this.testPokemonId(params.id)) {
+    async getPokeName(@Param('id') id: string): Promise<NameHolder> {
+        switch (this.testPokemonId(id)) {
             case 'valid':
-                return await this.appService.getPokeAttack(params.id);
+                return await this.appService.getPokeAttack(id);
             case 'no number':
                 throw new HttpException(
                     'Poke id must be an integer',
