@@ -1,38 +1,36 @@
 import { HttpException } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppServiceMock } from './app.service.mock';
+import { PokeController } from './poke.controller';
+import { PokeServiceMock } from './poke.service.mock';
 
 // needs in package.json:   "jest:": {"restoreMocks":true}, otherwise reset spys with beforeEach(...)
-describe('AppController', () => {
-    const appService = new AppServiceMock();
-    const appController = new AppController(appService);
-    describe('APP CONTROLLER id validation', () => {
+describe('PokeController', () => {
+    const service = new PokeServiceMock();
+    const controller = new PokeController(service);
+    describe('id validation', () => {
         it('for empty string', () => {
-            expect(appController.testPokemonId('')).toEqual('no number');
+            expect(controller.testPokemonId('')).toEqual('no number');
         });
         it('for invalid number', () => {
-            expect(appController.testPokemonId('999999')).toEqual(
-                'out of range'
-            );
+            expect(controller.testPokemonId('999999')).toEqual('out of range');
         });
         it('for 0', () => {
-            expect(appController.testPokemonId('0')).toEqual('out of range');
+            expect(controller.testPokemonId('0')).toEqual('out of range');
         });
         it('for valid number', () => {
-            expect(appController.testPokemonId('150')).toEqual('valid');
+            expect(controller.testPokemonId('150')).toEqual('valid');
         });
     });
-    describe('app controller response', () => {
+    describe('response', () => {
         it('valid id', async () => {
-            const spy = jest.spyOn(AppController.prototype, 'testPokemonId');
-            const body = await appController.getPokeName('150');
+            const spy = jest.spyOn(PokeController.prototype, 'testPokemonId');
+            const body = await controller.getPokeName('150');
             expect(body).toHaveProperty('name');
             expect(body).toHaveProperty('url');
             expect(spy).toBeCalled();
         });
         it('no number id', async () => {
             const errorTest = async () =>
-                await appController.getPokeName('fourtytwo');
+                await controller.getPokeName('fourtytwo');
             expect(errorTest).rejects.toThrowError(HttpException);
             try {
                 await errorTest();
@@ -42,7 +40,7 @@ describe('AppController', () => {
         });
         it('id out of range', async () => {
             const errorTest = async () =>
-                await appController.getPokeName('9999999999999');
+                await controller.getPokeName('9999999999999');
             expect(errorTest).rejects.toThrowError(HttpException);
             try {
                 await errorTest();

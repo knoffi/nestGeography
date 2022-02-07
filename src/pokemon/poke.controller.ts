@@ -6,19 +6,19 @@ import {
     Inject,
     Param,
 } from '@nestjs/common';
-import { IAppService, NameHolder } from './app.service';
+import { IPokeService, NameHolder } from './poke.service';
 
-@Controller()
-export class AppController {
+@Controller('pokemon')
+export class PokeController {
     private static readonly MAX_POKEMON_ID = 10220;
     constructor(
-        @Inject('IAppService') private readonly appService: IAppService
+        @Inject('IPokeService') private readonly service: IPokeService
     ) {}
     @Get(':id')
     async getPokeName(@Param('id') id: string): Promise<NameHolder> {
         switch (this.testPokemonId(id)) {
             case 'valid':
-                return await this.appService.getPokeAttack(id);
+                return await this.service.getPokeAttack(id);
             case 'no number':
                 throw new HttpException(
                     'Poke id must be an integer',
@@ -27,7 +27,7 @@ export class AppController {
             case 'out of range':
                 throw new HttpException(
                     'Poke id must be between 1 and ' +
-                        AppController.MAX_POKEMON_ID,
+                        PokeController.MAX_POKEMON_ID,
                     HttpStatus.BAD_REQUEST
                 );
 
@@ -48,7 +48,7 @@ export class AppController {
         } else {
             const idNumber = parseInt(id);
             const idInRange =
-                0 < idNumber && idNumber <= AppController.MAX_POKEMON_ID;
+                0 < idNumber && idNumber <= PokeController.MAX_POKEMON_ID;
             if (idInRange) {
                 return 'valid';
             } else {
