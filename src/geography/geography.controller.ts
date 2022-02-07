@@ -28,6 +28,7 @@ export class GeographyController {
         }
     }
     isCountryID(id: string): boolean {
-        return true;
+        const countryIDs = Object.keys(countries);
+        return countryIDs.some((countryID) => countryID === id);
     }
 }
