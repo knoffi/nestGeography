@@ -6,6 +6,6 @@ import { GeographyService } from './geography.service';
 @Module({
     controllers: [GeographyController],
     imports: [HttpModule],
-    providers: [GeographyService],
+    providers: [{ provide: 'IGeographyService', useClass: GeographyService }],
 })
 export class GeographyModule {}

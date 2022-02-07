@@ -5,14 +5,16 @@ export type CountryHolder = {
     country: { currency: string; capital: string; name: string };
 };
 type Response = { data: CountryHolder };
+export interface IGeographyService {
+    getCountry: (id: string) => CountryHolder | Promise<CountryHolder>;
+}
 @Injectable()
-export class GeographyService {
+export class GeographyService implements IGeographyService {
     constructor(private readonly http: HttpService) {}
-    async getCurrency(id: string): Promise<CountryHolder> {
+    async getCountry(id: string): Promise<CountryHolder> {
         try {
             const graphQLQuery =
                 'query{country(code:"' + id + '"){currency,capital,name} }';
-            console.log(graphQLQuery);
             const res = await firstValueFrom(
                 this.http
                     .post<Response>('https://countries.trevorblades.com/', {
