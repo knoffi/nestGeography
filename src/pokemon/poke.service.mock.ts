@@ -1,6 +1,6 @@
-import { IAppService, NameHolder } from './poke.service';
+import { IPokeService, NameHolder } from './poke.service';
 
-export class AppServiceMock implements IAppService {
+export class PokeServiceMock implements IPokeService {
     getPokeAttack() {
         const mockReturn: NameHolder = {
             name: 'struggle',

@@ -5,11 +5,11 @@ import { map } from 'rxjs/operators';
 export type NameHolder = { name: string; url: string };
 type MoveHolder = { move: NameHolder };
 type Moves = { moves: Array<MoveHolder> };
-export interface IAppService {
+export interface IPokeService {
     getPokeAttack: (id: string) => Promise<NameHolder> | NameHolder;
 }
 @Injectable()
-export class AppService implements IAppService {
+export class PokeService implements IPokeService {
     constructor(private httpService: HttpService) {}
     private static readonly DEFAULT_MOVE = {
         move: {
@@ -25,7 +25,7 @@ export class AppService implements IAppService {
                     .get<Moves>('https://pokeapi.co/api/v2/pokemon/' + id)
                     .pipe(map((res) => res.data.moves))
             );
-            return this.randomEntry(moveNames, AppService.DEFAULT_MOVE).move;
+            return this.randomEntry(moveNames, PokeService.DEFAULT_MOVE).move;
         } catch (error) {
             console.log(error);
         }
