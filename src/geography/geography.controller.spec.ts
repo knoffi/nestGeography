@@ -20,15 +20,25 @@ describe('Geography controller', () => {
     });
     describe('response', () => {
         it('for Germany', async () => {
+            const spy = jest.spyOn(
+                GeographyController.prototype,
+                'isCountryID'
+            );
             const response = await controller.getCountry('DE');
             expect(response).toHaveProperty(
                 'country',
                 GeographyServiceMock.mockCountry.country
             );
+            expect(spy).toBeCalled();
         });
         it('for wrong id', () => {
+            const spy = jest.spyOn(
+                GeographyController.prototype,
+                'isCountryID'
+            );
             const throwException = () => controller.getCountry('RICK+MORTY');
             expect(throwException()).rejects.toThrow('id');
+            expect(spy).toBeCalled();
         });
     });
 });
