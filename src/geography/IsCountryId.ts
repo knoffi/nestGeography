@@ -1,5 +1,8 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 import { countries } from 'countries-list';
+export const validate = (value: any) =>
+    typeof value === 'string' &&
+    Object.keys(countries).some((countryID) => countryID === value);
 
 export function IsCountryId(
     property: string,
@@ -13,14 +16,7 @@ export function IsCountryId(
             constraints: [property],
             options: validationOptions,
             validator: {
-                validate(value: any) {
-                    return (
-                        typeof value === 'string' &&
-                        Object.keys(countries).some(
-                            (countryID) => countryID === value
-                        )
-                    );
-                },
+                validate,
             },
         });
     };
