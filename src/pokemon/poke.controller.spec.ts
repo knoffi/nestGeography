@@ -18,5 +18,7 @@ describe('PokeController', () => {
         const body = await controller.getPokeName({ id: 150 });
         expect(body).toHaveProperty('name');
         expect(body).toHaveProperty('url');
+        const properties = Object.keys(body);
+        expect(properties).toHaveLength(2);
     });
 });
