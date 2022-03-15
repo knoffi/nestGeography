@@ -1,16 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { users } from './User';
 import { UsersController } from './users.controller';
+import { UsersServiceMock } from './users.service.mock';
 
 describe('UsersController', () => {
     let controller: UsersController;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        const moduleRef = await Test.createTestingModule({
             controllers: [UsersController],
+            // is for injectable providing (for controller) during tests
+            providers: [
+                { useClass: UsersServiceMock, provide: 'IUsersService' },
+            ],
         }).compile();
 
-        controller = module.get<UsersController>(UsersController);
+        controller = moduleRef.get<UsersController>(UsersController);
     });
 
     it('should be defined', () => {
