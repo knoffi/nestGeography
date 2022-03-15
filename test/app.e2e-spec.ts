@@ -25,6 +25,8 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
             .get('/users/')
             .expect(200);
+        expect(response.header['content-type']).toMatch(/application\/json.*/);
+
         expect(response.body).toHaveProperty('length');
         const userAmount: number = response.body.length;
         expect(typeof userAmount).toEqual('number');
@@ -34,6 +36,8 @@ describe('AppController (e2e)', () => {
         const response = await request(app.getHttpServer())
             .get('/users/69')
             .expect(200);
+        expect(response.header['content-type']).toMatch(/application\/json.*/);
+
         expect(response.body).toHaveProperty('name');
         const userName: string = response.body.name;
         expect(typeof userName).toEqual('string');
