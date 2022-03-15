@@ -24,4 +24,8 @@ describe('UsersController', () => {
         const responseBody = controller.allUsers();
         expect(responseBody).toHaveLength(4);
     });
+    it('get user by id', () => {
+        const responseBody = controller.getUser('69');
+        expect(responseBody).toEqual(UsersServiceMock.mocks.user);
+    });
 });
