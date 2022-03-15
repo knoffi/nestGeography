@@ -31,6 +31,12 @@ describe('AppController (e2e)', () => {
         const userAmount: number = response.body.length;
         expect(typeof userAmount).toEqual('number');
         expect(userAmount).toBeGreaterThanOrEqual(4);
+
+        const firstUser = response.body[0];
+        expect(firstUser.password).toBeUndefined;
+        Object.keys(firstUser).forEach((key) =>
+            expect(key).not.toEqual('password')
+        );
     });
     it('/users/69 (GET)', async () => {
         const response = await request(app.getHttpServer())
@@ -39,9 +45,11 @@ describe('AppController (e2e)', () => {
         expectApplicationJSON(response);
 
         expect(response.body).toHaveProperty('name');
-        const userName: string = response.body.name;
+        const user = response.body;
+        const userName: string = user.name;
         expect(typeof userName).toEqual('string');
         expect(userName).toEqual('Barney Stinson');
+        Object.keys(user).forEach((key) => expect(key).not.toEqual('password'));
     });
     it('/users/1 (GET)', async () => {
         const response = await request(app.getHttpServer())
