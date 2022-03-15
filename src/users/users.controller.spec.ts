@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { users } from './User';
 import { UsersController } from './users.controller';
 import { UsersServiceMock } from './users.service.mock';
 
@@ -23,6 +22,10 @@ describe('UsersController', () => {
     });
     it('get users', () => {
         const responseBody = controller.allUsers();
-        expect(responseBody).toHaveLength(users.length);
+        expect(responseBody).toHaveLength(4);
+    });
+    it('get user by id', () => {
+        const responseBody = controller.getUser('69');
+        expect(responseBody).toEqual(UsersServiceMock.mocks.user);
     });
 });

@@ -1,6 +1,11 @@
-import { IUserService } from './IUsersService';
-import { users } from './User';
+import { IUsersService } from './IUsersService';
+import { User } from './User';
+import { UsersService } from './users.service';
 
-export class UsersServiceMock implements IUserService {
-    allUsers = () => users;
+export class UsersServiceMock implements IUsersService {
+    static mocks = {
+        user: new User('1234', 'Max Mustermann', 'muster@mail.de'),
+    };
+    allUsers = () => UsersService.users;
+    getUser = () => UsersServiceMock.mocks.user;
 }
