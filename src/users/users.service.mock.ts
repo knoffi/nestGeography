@@ -1,11 +1,24 @@
 import { IUsersService } from './IUsersService';
-import { User } from './User';
-import { UsersService } from './users.service';
+import { CreateUserDto, User } from './User';
 
 export class UsersServiceMock implements IUsersService {
-    static mocks = {
-        user: new User('1234', 'Max Mustermann', 'muster@mail.de'),
+    private static stubUser: User = new User(
+        '1234',
+        'Max Mustermann',
+        'muster@mail.de',
+        {
+            pw: 'default',
+        }
+    );
+    static stubs = {
+        user: UsersServiceMock.stubUser,
+        allUsers: [UsersServiceMock.stubUser],
     };
-    allUsers = () => UsersService.users;
-    getUser = () => UsersServiceMock.mocks.user;
+    create = (newUser: CreateUserDto) => {
+        const creation = User.stubBuild(newUser);
+        UsersServiceMock.stubs.allUsers.push(creation);
+        return creation;
+    };
+    allUsers = () => UsersServiceMock.stubs.allUsers;
+    getUser = (id: string) => UsersServiceMock.stubs.user;
 }

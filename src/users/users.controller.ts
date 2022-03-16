@@ -1,26 +1,52 @@
-import { Controller, Get, Header, Inject, Param } from '@nestjs/common';
+import {
+    Body,
+    ClassSerializerInterceptor,
+    Controller,
+    Get,
+    Header,
+    Inject,
+    Param,
+    Post,
+    UseInterceptors,
+} from '@nestjs/common';
 import { IUsersService } from './IUsersService';
-import { User } from './User';
+import { CreateUserDto, GetUserDto, User } from './User';
 
 @Controller('users')
 export class UsersController {
     constructor(
-        @Inject('IUsersService') private readonly service: IUsersService
+        @Inject('IUsersService') public readonly service: IUsersService
     ) {}
+
     // TODO: use enum from external library instead of hard-writting this common header params
     @Get('/')
+    @UseInterceptors(ClassSerializerInterceptor)
     @Header('Content-Type', 'application/json')
-    allUsers(): User[] {
+    allUsers(): GetUserDto[] {
         return this.service.allUsers();
     }
+
     @Get(':id')
     @Header('Content-Type', 'application/json')
-    getUser(@Param('id') id: string): User {
-        const result = this.service.getUser(id);
-        if (result instanceof User) {
-            return result;
+    @UseInterceptors(ClassSerializerInterceptor)
+    getUser(@Param('id') id: string): GetUserDto {
+        const searchResult = this.service.getUser(id);
+        if (searchResult instanceof User) {
+            return searchResult;
         } else {
-            throw result;
+            throw searchResult;
+        }
+    }
+
+    @Post('/')
+    @Header('Content-Type', 'application/json')
+    @UseInterceptors(ClassSerializerInterceptor)
+    createUser(@Body() body: CreateUserDto): GetUserDto {
+        const creation = this.service.create(body);
+        if (creation instanceof User) {
+            return creation;
+        } else {
+            throw creation;
         }
     }
 }
