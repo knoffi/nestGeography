@@ -1,5 +1,5 @@
 import { IUsersService } from './IUsersService';
-import { User } from './User';
+import { CreateUserDto, User } from './User';
 
 export class UsersServiceMock implements IUsersService {
     private static stubUser: User = new User(
@@ -14,7 +14,7 @@ export class UsersServiceMock implements IUsersService {
         user: UsersServiceMock.stubUser,
         allUsers: [UsersServiceMock.stubUser],
     };
-    create = (newUser: Omit<User, 'id'>) => {
+    create = (newUser: CreateUserDto) => {
         const creation = User.stubBuild(newUser);
         UsersServiceMock.stubs.allUsers.push(creation);
         return creation;

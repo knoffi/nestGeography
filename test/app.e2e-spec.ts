@@ -1,5 +1,6 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { CreateUserDto } from 'src/users/User';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
@@ -12,19 +13,24 @@ describe('AppController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
+        app.useGlobalPipes(new ValidationPipe());
         await app.init();
     });
 
-    it('/pokemon/25 (GET)', () => {
-        return request(app.getHttpServer()).get('/pokemon/25').expect(200);
-    });
-    it('/geography/HK (GET)', () => {
-        return request(app.getHttpServer()).get('/geography/HK').expect(200);
-    });
+    // it('/pokemon/25 (GET)', () => {
+    //     return request(app.getHttpServer())
+    //         .get('/pokemon/25')
+    //         .expect(HttpStatus.OK);
+    // });
+    // it('/geography/HK (GET)', () => {
+    //     return request(app.getHttpServer())
+    //         .get('/geography/HK')
+    //         .expect(HttpStatus.OK);
+    // });
     it('USERS GET all', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/')
-            .expect(200);
+            .expect(HttpStatus.OK);
         expectApplicationJSON(response);
 
         expect(response.body).toHaveProperty('length');
@@ -41,7 +47,7 @@ describe('AppController (e2e)', () => {
     it('USERS GET by valid id', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/69')
-            .expect(200);
+            .expect(HttpStatus.OK);
         expectApplicationJSON(response);
 
         expect(response.body).toHaveProperty('name');
@@ -54,7 +60,7 @@ describe('AppController (e2e)', () => {
     it('USERS GET by invalid id', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/1')
-            .expect(404);
+            .expect(HttpStatus.NOT_FOUND);
         expectApplicationJSON(response);
 
         expect(response.body).toHaveProperty('message');
@@ -63,7 +69,7 @@ describe('AppController (e2e)', () => {
         expect(message).toMatch(/not found/i);
     });
     it('USERS POST by valid data', async () => {
-        const requestBody = {
+        const requestBody: CreateUserDto = {
             name: 'Max',
             password: '123456789',
             email: 'maxmustermann@tester.com',
@@ -72,7 +78,6 @@ describe('AppController (e2e)', () => {
             .post('/users/')
             .send(requestBody);
         expectApplicationJSON(response);
-
         expect(response.status).toEqual(HttpStatus.CREATED);
 
         expect(response.body).toBeDefined();
@@ -89,6 +94,57 @@ describe('AppController (e2e)', () => {
         const selectionResult = selection.body;
         expect(selectionResult.name).toEqual(requestBody.name);
         expect(selectionResult.email).toEqual(requestBody.email);
+    });
+    it('USERS POST by invalid name', async () => {
+        const requestBody = {
+            name: 123, // NOTE: this is not a string
+            password: '123456789',
+            email: 'user@gmail.com',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody);
+        expectApplicationJSON(response);
+        expect(response.status).toEqual(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS POST by password', async () => {
+        const requestBody = {
+            name: 'Boldwin',
+            password: '1', // NOTE: this is too short
+            email: 'user@gmail.com',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody);
+        expectApplicationJSON(response);
+        expect(response.status).toEqual(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS POST by password', async () => {
+        const requestBody = {
+            name: 'Boldwin',
+            password: '123456789',
+            email: 'this is not a mail', // NOTE: this is not an email
+        };
+        const response = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody);
+        expectApplicationJSON(response);
+        expect(response.status).toEqual(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS POST conflict after posting email twice', async () => {
+        const requestBody = {
+            name: 'Boldwin',
+            password: '123456789',
+            email: 'user@gmail.com',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody)
+            .expect(HttpStatus.CREATED);
+        const secondResponse = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody)
+            .expect(HttpStatus.CONFLICT);
     });
 });
 

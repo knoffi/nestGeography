@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IUsersService } from './IUsersService';
-import { User } from './User';
+import { CreateUserDto, User } from './User';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -25,19 +25,29 @@ export class UsersService implements IUsersService {
             return new HttpException('User Id Not Found', HttpStatus.NOT_FOUND);
         }
     };
-    create = (newUser: Omit<User, 'id'>) => {
-        const usedIDs = UsersService.users.map((user) => user.id);
-        const newID = new Array(UsersService.users.length)
-            .fill(1)
-            .map((undefined, index) => index.toString())
-            .find((entry) => !usedIDs.includes(entry));
-        const creation = new User(
-            newID,
-            newUser.name,
-            newUser.email,
-            newUser.password
+    create = (newUser: CreateUserDto) => {
+        const emailAlreadyInUse = UsersService.users.some(
+            (user) => user.email === newUser.email
         );
-        UsersService.users.push(creation);
-        return creation;
+        if (emailAlreadyInUse) {
+            return new HttpException(
+                'Email already exists!',
+                HttpStatus.CONFLICT
+            );
+        } else {
+            const usedIDs = UsersService.users.map((user) => user.id);
+            const newID = new Array(UsersService.users.length)
+                .fill(1)
+                .map((undefined, index) => index.toString())
+                .find((entry) => !usedIDs.includes(entry));
+            const creation = new User(
+                newID,
+                newUser.name,
+                newUser.email,
+                newUser.password
+            );
+            UsersService.users.push(creation);
+            return creation;
+        }
     };
 }
