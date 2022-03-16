@@ -5,6 +5,7 @@ import {
     Header,
     Inject,
     Param,
+    Post,
     UseInterceptors,
 } from '@nestjs/common';
 import { IUsersService } from './IUsersService';
@@ -26,11 +27,22 @@ export class UsersController {
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
     getUser(@Param('id') id: string): User {
-        const result = this.service.getUser(id);
-        if (result instanceof User) {
-            return result;
+        const searchResult = this.service.getUser(id);
+        if (searchResult instanceof User) {
+            return searchResult;
         } else {
-            throw result;
+            throw searchResult;
+        }
+    }
+    @Post('/')
+    @Header('Content-Type', 'application/json')
+    @UseInterceptors(ClassSerializerInterceptor)
+    createUser(): User {
+        const creation = this.service.getUser('69');
+        if (creation instanceof User) {
+            return creation;
+        } else {
+            throw creation;
         }
     }
 }

@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
@@ -21,7 +21,7 @@ describe('AppController (e2e)', () => {
     it('/geography/HK (GET)', () => {
         return request(app.getHttpServer()).get('/geography/HK').expect(200);
     });
-    it('/users/ (GET)', async () => {
+    it('USERS GET all', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/')
             .expect(200);
@@ -38,7 +38,7 @@ describe('AppController (e2e)', () => {
             expect(key).not.toEqual('password')
         );
     });
-    it('/users/69 (GET)', async () => {
+    it('USERS GET by valid id', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/69')
             .expect(200);
@@ -51,7 +51,7 @@ describe('AppController (e2e)', () => {
         expect(userName).toEqual('Barney Stinson');
         Object.keys(user).forEach((key) => expect(key).not.toEqual('password'));
     });
-    it('/users/1 (GET)', async () => {
+    it('USERS GET by invalid id', async () => {
         const response = await request(app.getHttpServer())
             .get('/users/1')
             .expect(404);
@@ -61,6 +61,18 @@ describe('AppController (e2e)', () => {
         const message = response.body['message'];
         expect(typeof message).toEqual('string');
         expect(message).toMatch(/not found/i);
+    });
+    it('USERS POST by valid data', async () => {
+        const response = await request(app.getHttpServer())
+            .post('/users/')
+            .send({
+                name: 'Max',
+                password: '123456789',
+                email: 'maxmustermann@tester.com',
+            });
+        expectApplicationJSON(response);
+
+        expect(response.status).toEqual(HttpStatus.CREATED);
     });
 });
 
