@@ -63,16 +63,32 @@ describe('AppController (e2e)', () => {
         expect(message).toMatch(/not found/i);
     });
     it('USERS POST by valid data', async () => {
+        const requestBody = {
+            name: 'Max',
+            password: '123456789',
+            email: 'maxmustermann@tester.com',
+        };
         const response = await request(app.getHttpServer())
             .post('/users/')
-            .send({
-                name: 'Max',
-                password: '123456789',
-                email: 'maxmustermann@tester.com',
-            });
+            .send(requestBody);
         expectApplicationJSON(response);
 
         expect(response.status).toEqual(HttpStatus.CREATED);
+
+        expect(response.body).toBeDefined();
+
+        const body = response.body;
+        expect(body.password).toBeUndefined();
+        expect(body).toHaveProperty('id');
+        expect(body.name).toEqual(requestBody.name);
+        expect(body.email).toEqual(requestBody.email);
+
+        const selection = await request(app.getHttpServer())
+            .get('/users/' + body.id)
+            .expect(HttpStatus.OK);
+        const selectionResult = selection.body;
+        expect(selectionResult.name).toEqual(requestBody.name);
+        expect(selectionResult.email).toEqual(requestBody.email);
     });
 });
 

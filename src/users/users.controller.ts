@@ -1,4 +1,5 @@
 import {
+    Body,
     ClassSerializerInterceptor,
     Controller,
     Get,
@@ -14,7 +15,7 @@ import { User } from './User';
 @Controller('users')
 export class UsersController {
     constructor(
-        @Inject('IUsersService') private readonly service: IUsersService
+        @Inject('IUsersService') public readonly service: IUsersService
     ) {}
     // TODO: use enum from external library instead of hard-writting this common header params
     @Get('/')
@@ -37,8 +38,8 @@ export class UsersController {
     @Post('/')
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
-    createUser(): User {
-        const creation = this.service.getUser('69');
+    createUser(@Body() body: Omit<User, 'id'>): User {
+        const creation = this.service.create(body);
         if (creation instanceof User) {
             return creation;
         } else {
