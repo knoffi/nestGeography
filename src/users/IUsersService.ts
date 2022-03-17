@@ -4,7 +4,7 @@ import { CreateUserDto, User } from './users.entity';
 export interface IUsersService {
     allUsers: () => Promise<User[]>;
     getUser: (id: string) => Promise<User | HttpException>;
-    create: (newUser: CreateUserDto) => User | HttpException;
+    create: (newUser: CreateUserDto) => Promise<User | HttpException>;
     delete: (id: string) => Promise<void | HttpException>;
     update: (
         id: string,

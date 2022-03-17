@@ -19,7 +19,7 @@ export class UsersServiceMock implements IUsersService {
         user: UsersServiceMock.stubUser,
         allUsers: [UsersServiceMock.stubUser],
     };
-    create = (newUser: CreateUserDto) => {
+    create = async (newUser: CreateUserDto) => {
         const creation = User.stubBuild(newUser);
         UsersServiceMock.stubs.allUsers.push(creation);
         return creation;

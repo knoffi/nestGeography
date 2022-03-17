@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom, map } from 'rxjs';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, QueryFailedError, Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
 
@@ -12,10 +12,7 @@ export class UsersService implements IUsersService {
     constructor(
         @InjectRepository(User) private repository: Repository<User>,
         private httpService: HttpService //REMOVE after e2e tests are fixed
-    ) {
-        this.repository.clear();
-        this.fillRepo();
-    }
+    ) {}
     update = async (
         id: string,
         updates: Partial<CreateUserDto>
@@ -32,8 +29,11 @@ export class UsersService implements IUsersService {
                 0 < (await this.repository.count({ where: { id: id } }));
             if (idExists) {
                 // FRAGE: wie am besten als oneliner (it save)?
-                this.repository.update({ id: id }, updates);
-                return this.repository.findOne({ where: { id: id } });
+                await this.repository.update({ id: id }, updates);
+                const updatedUser = await this.repository.findOne({
+                    where: { id: id },
+                });
+                return updatedUser;
             } else {
                 return new HttpException(
                     'Id not found',
@@ -46,16 +46,19 @@ export class UsersService implements IUsersService {
         try {
             const repoEmpty = (await this.repository.count()) === 0;
             if (repoEmpty) {
-                this.repository.save(UsersService.users);
+                await this.repository.save(UsersService.users);
             }
         } catch (e) {
             console.log(e);
         }
     };
+    clear = async () => {
+        await this.repository.clear();
+    };
     getValidID = async () => {
         try {
-            const user = this.repository.findOne();
-            return (await user).id;
+            const user = await this.repository.findOne();
+            return user.id;
         } catch (e) {
             console.log(e);
         }
@@ -83,22 +86,35 @@ export class UsersService implements IUsersService {
             console.log(e);
         }
     };
-    create = (newUser: CreateUserDto) => {
-        // TODO: email should be column without duplicates
+    create = async (newUser: CreateUserDto) => {
         const creation = new User(
             newUser.name,
             newUser.email,
             newUser.password
         );
-        this.repository.save(creation);
-        return creation;
+        try {
+            const savedCreation = await this.repository.save(creation);
+            return savedCreation;
+        } catch (e) {
+            if (
+                e instanceof QueryFailedError &&
+                e.name.match(/UNIQUE constraint failed/i)
+            ) {
+                return new HttpException(
+                    'Email is already used',
+                    HttpStatus.CONFLICT
+                );
+            } else {
+                console.log(e.name);
+                console.log(e.message);
+            }
+        }
     };
     delete = async (id: string): Promise<void | HttpException> => {
         console.log('I work');
         const deletionTarget = await this.repository.findOne({ where: { id } });
         if (deletionTarget) {
-            console.log('I remove');
-            this.repository.remove(deletionTarget);
+            await this.repository.remove(deletionTarget);
         } else {
             return new HttpException('Id not found', HttpStatus.NOT_FOUND);
         }

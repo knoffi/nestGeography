@@ -44,8 +44,8 @@ export class UsersController {
     @Post('/')
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
-    createUser(@Body() body: CreateUserDto): GetUserDto {
-        const creation = this.service.create(body);
+    async createUser(@Body() body: CreateUserDto): Promise<GetUserDto> {
+        const creation = await this.service.create(body);
         if (creation instanceof User) {
             return creation;
         } else {
