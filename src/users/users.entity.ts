@@ -46,7 +46,7 @@ export class User {
     @Exclude()
     password: string;
 
-    @Column()
+    @Column({ unique: true })
     @IsString()
     @IsEmail()
     email: string;

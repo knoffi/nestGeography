@@ -20,4 +20,6 @@ export class UsersServiceMock implements IUsersService {
     };
     allUsers = async () => UsersServiceMock.stubs.allUsers;
     getUser = async (id: string) => UsersServiceMock.stubs.user;
+    //REMOVE after tests are fixed
+    postRandomUser: () => Promise<void>;
 }

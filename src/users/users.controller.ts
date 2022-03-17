@@ -49,4 +49,10 @@ export class UsersController {
             throw creation;
         }
     }
+    //REMOVE after tests are fixed
+    @Get('post/post')
+    postUser(): string {
+        this.service.postRandomUser();
+        return 'A';
+    }
 }

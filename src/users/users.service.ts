@@ -1,12 +1,17 @@
+import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { firstValueFrom, map } from 'rxjs';
 import { FindManyOptions, Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
 
 @Injectable()
 export class UsersService implements IUsersService {
-    constructor(@InjectRepository(User) private repository: Repository<User>) {
+    constructor(
+        @InjectRepository(User) private repository: Repository<User>,
+        private httpService: HttpService //REMOVE after e2e tests are fixed
+    ) {
         this.repository.clear();
         this.fillRepo();
     }
@@ -52,28 +57,33 @@ export class UsersService implements IUsersService {
         }
     };
     create = (newUser: CreateUserDto) => {
-        const emailAlreadyInUse = UsersService.users.some(
-            (user) => user.email === newUser.email
+        // TODO: email should be column without duplicates
+        const creation = new User(
+            newUser.name,
+            newUser.email,
+            newUser.password
         );
-        if (emailAlreadyInUse) {
-            return new HttpException(
-                'Email already exists!',
-                HttpStatus.CONFLICT
+        this.repository.save(creation);
+        return creation;
+    };
+    //REMOVE after tests are fixed
+    postRandomUser = async () => {
+        const user = this.randomUser();
+        try {
+            const result = await firstValueFrom(
+                this.httpService
+                    .post('http://localhost:3000/users/', user)
+                    .pipe(map((res) => res.data))
             );
-        } else {
-            const usedIDs = UsersService.users.map((user) => user.id);
-            const newID = new Array(UsersService.users.length)
-                .fill(1)
-                .map((undefined, index) => index.toString())
-                .find((entry) => !usedIDs.includes(entry));
-            const creation = new User(
-                newUser.name,
-                newUser.email,
-                newUser.password
-            );
-            UsersService.users.push(creation);
-            return creation;
+        } catch (e) {
+            console.log(e);
         }
+    };
+    private randomUser = (): CreateUserDto => {
+        const name = 'HenryThe' + 'King'; //+ Math.round(Math.random() * 100) + '.';
+        const email = name.toLowerCase().replace('.', '') + '@gmail.com';
+        const password = 'ForTheKingYouLousyPeasants';
+        return { name, email, password };
     };
     static users = [
         new User('Barney Stinson', 'awesome@gnb.com', { pw: 'default' }),
