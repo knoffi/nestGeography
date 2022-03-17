@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { IsEmail, IsString, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 interface IUser {
     name: string;
@@ -15,6 +15,21 @@ export class CreateUserDto implements Omit<IUser, 'id'> {
     @IsEmail()
     email: string;
 
+    @IsString()
+    @Length(8, 50)
+    password: string;
+}
+export class CreateUserPartialDto implements Partial<Omit<IUser, 'id'>> {
+    @IsOptional()
+    @IsString()
+    @Length(3, 100)
+    name: string;
+
+    @IsOptional()
+    @IsEmail()
+    email: string;
+
+    @IsOptional()
     @IsString()
     @Length(8, 50)
     password: string;

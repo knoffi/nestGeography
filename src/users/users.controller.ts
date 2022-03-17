@@ -15,7 +15,12 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { IUsersService } from './IUsersService';
-import { CreateUserDto, GetUserDto, User } from './users.entity';
+import {
+    CreateUserDto,
+    CreateUserPartialDto,
+    GetUserDto,
+    User,
+} from './users.entity';
 
 @Controller('users')
 export class UsersController {
@@ -68,7 +73,7 @@ export class UsersController {
     @UseInterceptors(ClassSerializerInterceptor)
     async update(
         @Param('id') id: string,
-        @Body() updates: Partial<CreateUserDto>
+        @Body() updates: CreateUserPartialDto
     ): Promise<GetUserDto | HttpException> {
         const update = await this.service.update(id, updates);
         if (update instanceof User) {

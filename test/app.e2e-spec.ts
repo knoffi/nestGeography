@@ -177,6 +177,131 @@ describe('AppController (e2e)', () => {
 
         expect(JSON.parse(deletion.text).message).toMatch(/not found/i);
     });
+    it('USERS PATCH by valid data', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'Elliot',
+            email: 'elliot@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+
+        const newName = 'Elliot Jr.';
+        const patchBody = { name: newName };
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.OK);
+        expect(patch.body.name).toEqual(newName);
+        expect(patch.body.password).toBeUndefined();
+
+        const selection = await request(app.getHttpServer())
+            .get('/users/' + idAfterAdd)
+            .expect(HttpStatus.OK);
+        expect(selection.body.name).toEqual(newName);
+    });
+    it('USERS PATCH by empty data', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'PatcherInvalid1',
+            email: 'patcherinvalid1@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+
+        const patchBody = {};
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS PATCH by invalid name', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'Patcher3',
+            email: 'patcher3@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+
+        const patchBody = { name: 'pa' };
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS PATCH by invalid email', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'Patcher4',
+            email: 'patcher4@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+
+        const patchBody = { email: 'notAMail' };
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS PATCH by invalid password', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'Patcher5',
+            email: 'patcher5@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+
+        const patchBody = { password: '123' };
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.BAD_REQUEST);
+    });
+    it('USERS PATCH by email which is already used', async () => {
+        const addFirstBody: CreateUserDto = {
+            name: 'Patcher6',
+            email: 'patcher6@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addSecondBody: CreateUserDto = {
+            name: 'Patcher7',
+            email: 'patcher7@gmail.com',
+            password: 'IamBlondie',
+        };
+        const addFirst = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addFirstBody)
+            .expect(HttpStatus.CREATED);
+        const idAfterAdd = addFirst.body.id;
+        const addSecond = await request(app.getHttpServer())
+            .post('/users/')
+            .send(addSecondBody)
+            .expect(HttpStatus.CREATED);
+
+        const patchBody = { email: addSecondBody.email };
+        const patch = await request(app.getHttpServer())
+            .patch('/users/' + idAfterAdd)
+            .send(patchBody)
+            .expect(HttpStatus.CONFLICT);
+    });
 });
 
 const expectApplicationJSON = (response: request.Response) =>

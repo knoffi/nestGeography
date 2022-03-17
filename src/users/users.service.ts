@@ -24,16 +24,28 @@ export class UsersService implements IUsersService {
                 HttpStatus.BAD_REQUEST
             );
         } else {
-            //FRAGE: geht auch repository.hasId(id) ?
             const idExists =
                 0 < (await this.repository.count({ where: { id: id } }));
             if (idExists) {
-                // FRAGE: wie am besten als oneliner (it save)?
-                await this.repository.update({ id: id }, updates);
-                const updatedUser = await this.repository.findOne({
-                    where: { id: id },
-                });
-                return updatedUser;
+                try {
+                    await this.repository.update({ id: id }, updates);
+                    const updatedUser = await this.repository.findOne({
+                        where: { id: id },
+                    });
+                    return updatedUser;
+                } catch (e) {
+                    if (
+                        e instanceof QueryFailedError &&
+                        e.message.match(
+                            / UNIQUE constraint failed: user.email/i
+                        )
+                    ) {
+                        return new HttpException(
+                            'Email is already used',
+                            HttpStatus.CONFLICT
+                        );
+                    }
+                }
             } else {
                 return new HttpException(
                     'Id not found',
