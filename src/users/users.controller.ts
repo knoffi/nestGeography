@@ -2,10 +2,13 @@ import {
     Body,
     ClassSerializerInterceptor,
     Controller,
+    Delete,
     Get,
     Header,
+    HttpException,
     Inject,
     Param,
+    Patch,
     Post,
     UseInterceptors,
 } from '@nestjs/common';
@@ -49,10 +52,43 @@ export class UsersController {
             throw creation;
         }
     }
+    @Delete(':id')
+    @Header('Content-Type', 'application/json')
+    async delete(@Param('id') id: string): Promise<void> {
+        console.log('I get called with ' + id);
+        const deletion = await this.service.delete(id);
+        if (deletion instanceof HttpException) {
+            throw deletion;
+        }
+    }
+    @Patch(':id')
+    @Header('Content-Type', 'application/json')
+    @UseInterceptors(ClassSerializerInterceptor)
+    async update(
+        @Param('id') id: string,
+        @Body() updates: Partial<CreateUserDto>
+    ): Promise<GetUserDto | HttpException> {
+        const update = await this.service.update(id, updates);
+        if (update instanceof User) {
+            return update;
+        } else {
+            throw update;
+        }
+    }
     //REMOVE after tests are fixed
     @Get('post/post')
     postUser(): string {
         this.service.postRandomUser();
         return 'A';
+    }
+    @Get('delete/:id')
+    deleteUser(@Param('id') id: string): string {
+        this.service.deleteRandomUser(id);
+        return 'B';
+    }
+    @Get('patch/:id')
+    updateUser(@Param('id') id: string): string {
+        this.service.updateRandomUser(id);
+        return 'B';
     }
 }
