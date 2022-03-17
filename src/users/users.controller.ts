@@ -82,20 +82,4 @@ export class UsersController {
             throw update;
         }
     }
-    //REMOVE after tests are fixed
-    @Get('post/post')
-    postUser(): string {
-        this.service.postRandomUser();
-        return 'A';
-    }
-    @Get('delete/:id')
-    deleteUser(@Param('id') id: string): string {
-        this.service.deleteRandomUser(id);
-        return 'B';
-    }
-    @Get('patch/:id')
-    updateUser(@Param('id') id: string): string {
-        this.service.updateRandomUser(id);
-        return 'B';
-    }
 }

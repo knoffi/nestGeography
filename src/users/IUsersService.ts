@@ -10,8 +10,4 @@ export interface IUsersService {
         id: string,
         updates: Partial<CreateUserDto>
     ) => Promise<User | HttpException>;
-    //REMOVE after tests are fixed
-    postRandomUser: () => Promise<void>;
-    deleteRandomUser: (id: string) => Promise<void>;
-    updateRandomUser: (id: string) => Promise<void>;
 }

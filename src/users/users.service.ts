@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { firstValueFrom, map } from 'rxjs';
 import { FindManyOptions, QueryFailedError, Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
@@ -145,45 +144,4 @@ export class UsersService implements IUsersService {
             pw: 'default',
         }),
     ];
-    //REMOVE after tests are fixed
-    postRandomUser = async () => {
-        const user = this.randomUser();
-        try {
-            const result = await firstValueFrom(
-                this.httpService
-                    .post('http://localhost:3000/users/', user)
-                    .pipe(map((res) => res.data))
-            );
-        } catch (e) {
-            console.log(e);
-        }
-    };
-    deleteRandomUser = async (id: string) => {
-        try {
-            await firstValueFrom(
-                this.httpService.delete('http://localhost:3000/users/' + id)
-            );
-        } catch (error) {
-            console.log(error);
-        }
-    };
-    updateRandomUser = async (id: string) => {
-        try {
-            const update: Partial<CreateUserDto> = { name: 'Rick Sanchez' };
-            await firstValueFrom(
-                this.httpService.patch(
-                    'http://localhost:3000/users/' + id,
-                    update
-                )
-            );
-        } catch (e) {
-            console.log(e);
-        }
-    };
-    private randomUser = (): CreateUserDto => {
-        const name = 'HenryThe' + 'King';
-        const email = name.toLowerCase().replace('.', '') + '@gmail.com';
-        const password = 'ForTheKingYouLousyPeasants';
-        return { name, email, password };
-    };
 }
