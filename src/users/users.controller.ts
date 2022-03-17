@@ -5,7 +5,9 @@ import {
     Delete,
     Get,
     Header,
+    HttpCode,
     HttpException,
+    HttpStatus,
     Inject,
     Param,
     Patch,
@@ -54,8 +56,8 @@ export class UsersController {
     }
     @Delete(':id')
     @Header('Content-Type', 'application/json')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async delete(@Param('id') id: string): Promise<void> {
-        console.log('I get called with ' + id);
         const deletion = await this.service.delete(id);
         if (deletion instanceof HttpException) {
             throw deletion;

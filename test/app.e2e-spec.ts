@@ -57,17 +57,17 @@ describe('AppController (e2e)', () => {
         expect(userName).toEqual('Barney Stinson');
         Object.keys(user).forEach((key) => expect(key).not.toEqual('password'));
     });
-    // it('USERS GET by invalid id', async () => {
-    //     const response = await request(app.getHttpServer())
-    //         .get('/users/1')
-    //         .expect(HttpStatus.NOT_FOUND);
-    //     expectApplicationJSON(response);
+    it('USERS GET by invalid id', async () => {
+        const response = await request(app.getHttpServer())
+            .get('/users/applePie')
+            .expect(HttpStatus.NOT_FOUND);
+        expectApplicationJSON(response);
 
-    //     expect(response.body).toHaveProperty('message');
-    //     const message = response.body['message'];
-    //     expect(typeof message).toEqual('string');
-    //     expect(message).toMatch(/not found/i);
-    // });
+        expect(response.body).toHaveProperty('message');
+        const message = response.body['message'];
+        expect(typeof message).toEqual('string');
+        expect(message).toMatch(/not found/i);
+    });
     it('USERS POST by valid data', async () => {
         const requestBody: CreateUserDto = {
             name: 'Dorian',
@@ -145,6 +145,37 @@ describe('AppController (e2e)', () => {
             .post('/users/')
             .send(requestBody)
             .expect(HttpStatus.CONFLICT);
+    });
+    it('USERS DELETE after adding', async () => {
+        const requestBody = {
+            name: 'Turk',
+            password: '123456789',
+            email: 'turk@gmail.com',
+        };
+        const postResponse = await request(app.getHttpServer())
+            .post('/users/')
+            .send(requestBody)
+            .expect(HttpStatus.CREATED);
+
+        expect(postResponse.body.id).toBeTruthy();
+        const idForDelete = postResponse.body.id;
+        const deletion = await request(app.getHttpServer())
+            .delete('/users/' + idForDelete)
+            .expect(HttpStatus.NO_CONTENT);
+
+        expect(deletion.body).toEqual({});
+
+        const searchAfterDelete = await request(app.getHttpServer())
+            .get('/users/' + idForDelete)
+            .expect(HttpStatus.NOT_FOUND);
+    });
+    it('USERS DELETE by invalid id', async () => {
+        const idForDelete = 'suchANonsense';
+        const deletion = await request(app.getHttpServer())
+            .delete('/users/' + idForDelete)
+            .expect(HttpStatus.NOT_FOUND);
+
+        expect(JSON.parse(deletion.text).message).toMatch(/not found/i);
     });
 });
 

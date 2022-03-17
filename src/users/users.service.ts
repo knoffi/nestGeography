@@ -98,7 +98,7 @@ export class UsersService implements IUsersService {
         } catch (e) {
             if (
                 e instanceof QueryFailedError &&
-                e.name.match(/UNIQUE constraint failed/i)
+                e.message.match(/UNIQUE constraint failed/i)
             ) {
                 return new HttpException(
                     'Email is already used',
@@ -111,7 +111,6 @@ export class UsersService implements IUsersService {
         }
     };
     delete = async (id: string): Promise<void | HttpException> => {
-        console.log('I work');
         const deletionTarget = await this.repository.findOne({ where: { id } });
         if (deletionTarget) {
             await this.repository.remove(deletionTarget);
