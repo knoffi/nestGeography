@@ -1,33 +1,40 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateUserDto } from 'src/users/User';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import * as request from 'supertest';
+import { getConnection } from 'typeorm';
 import { AppModule } from './../src/app.module';
+import { CreateUserDto, User } from './../src/users/users.entity';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
 
     beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
+            imports: [
+                AppModule,
+                //FRAGE
+                TypeOrmModule.forRoot({
+                    type: 'sqlite',
+                    //FRAGE
+                    database: ':memory:',
+                    entities: [User],
+                    logging: true,
+                    synchronize: true,
+                }),
+            ],
         }).compile();
-
         app = moduleFixture.createNestApplication();
         app.useGlobalPipes(new ValidationPipe());
         await app.init();
     });
+    afterEach(() => {
+        let conn = getConnection();
+        return conn.close();
+    });
 
-    // it('/pokemon/25 (GET)', () => {
-    //     return request(app.getHttpServer())
-    //         .get('/pokemon/25')
-    //         .expect(HttpStatus.OK);
-    // });
-    // it('/geography/HK (GET)', () => {
-    //     return request(app.getHttpServer())
-    //         .get('/geography/HK')
-    //         .expect(HttpStatus.OK);
-    // });
     it('USERS GET all', async () => {
+        //WIP: needs db filling from service
         const response = await request(app.getHttpServer())
             .get('/users/')
             .expect(HttpStatus.OK);
@@ -45,6 +52,7 @@ describe('AppController (e2e)', () => {
         );
     });
     it('USERS GET by valid id', async () => {
+        //WIP: needs valid id from service and db filling
         const response = await request(app.getHttpServer())
             .get('/users/69')
             .expect(HttpStatus.OK);

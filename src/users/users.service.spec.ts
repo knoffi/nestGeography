@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from './User';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { getConnection } from 'typeorm';
+import { User } from './users.entity';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -9,22 +11,39 @@ describe('UsersService', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [UsersService],
+            imports: [
+                //FRAGE
+                TypeOrmModule.forRoot({
+                    type: 'sqlite',
+                    //FRAGE
+                    database: 'db',
+                    entities: [User],
+                    logging: true,
+                    synchronize: true,
+                }),
+            ],
         }).compile();
 
         service = module.get<UsersService>(UsersService);
+        service.fillRepo();
+    });
+    //FRAGE
+    afterEach(() => {
+        let conn = getConnection();
+        return conn.close();
     });
 
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
-    it('all users', () => {
-        const users = service.allUsers();
-        expect(users).toHaveLength(4);
+    it('all users', async () => {
+        const users = await service.allUsers();
+        expect(users.length).toBeGreaterThan(0);
     });
-    it('user by id', () => {
-        const user = service.getUser('69');
-        expect(user).toHaveProperty('name');
-        expect(user.name).toEqual('Barney Stinson');
+    it('user by valid id', async () => {
+        const validID = await service.getValidID();
+        const user = await service.getUser(validID);
+        expect(user instanceof User).toBeTruthy();
     });
     it('create valid user', () => {
         const request = {

@@ -1,9 +1,8 @@
 import { IUsersService } from './IUsersService';
-import { CreateUserDto, User } from './User';
+import { CreateUserDto, User } from './users.entity';
 
 export class UsersServiceMock implements IUsersService {
     private static stubUser: User = new User(
-        '1234',
         'Max Mustermann',
         'muster@mail.de',
         {
@@ -19,6 +18,6 @@ export class UsersServiceMock implements IUsersService {
         UsersServiceMock.stubs.allUsers.push(creation);
         return creation;
     };
-    allUsers = () => UsersServiceMock.stubs.allUsers;
-    getUser = (id: string) => UsersServiceMock.stubs.user;
+    allUsers = async () => UsersServiceMock.stubs.allUsers;
+    getUser = async (id: string) => UsersServiceMock.stubs.user;
 }

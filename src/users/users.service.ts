@@ -1,28 +1,54 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
-import { CreateUserDto, User } from './User';
+import { CreateUserDto, User } from './users.entity';
 
 @Injectable()
 export class UsersService implements IUsersService {
-    static users = [
-        new User('69', 'Barney Stinson', 'awesome@gnb.com', { pw: 'default' }),
-        new User('42', 'Hitchhiker', 'through@the-galaxy.com', {
-            pw: 'default',
-        }),
-        new User('17', 'Michael Spivak', 'calculus@analysis.com', {
-            pw: 'default',
-        }),
-        new User('123', 'Max Mustermann', 'mymail@service.com', {
-            pw: 'default',
-        }),
-    ];
-    allUsers = () => UsersService.users;
-    getUser = (id: string) => {
-        const user = UsersService.users.find((user) => user.id === id);
-        if (user) {
-            return user;
-        } else {
-            return new HttpException('User Id Not Found', HttpStatus.NOT_FOUND);
+    constructor(@InjectRepository(User) private repository: Repository<User>) {
+        this.repository.clear();
+        this.fillRepo();
+    }
+    fillRepo = async () => {
+        try {
+            const repoEmpty = (await this.repository.count()) === 0;
+            if (repoEmpty) {
+                this.repository.save(UsersService.users);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    getValidID = async () => {
+        try {
+            const user = this.repository.findOne();
+            return (await user).id;
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    allUsers = async () => {
+        try {
+            return await this.repository.find();
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    getUser = async (id: string) => {
+        try {
+            const condition: FindManyOptions<User> = { where: { id } };
+            const user = await this.repository.findOne(condition);
+            if (user) {
+                return user;
+            } else {
+                return new HttpException(
+                    'User Id Not Found',
+                    HttpStatus.NOT_FOUND
+                );
+            }
+        } catch (e) {
+            console.log(e);
         }
     };
     create = (newUser: CreateUserDto) => {
@@ -41,7 +67,6 @@ export class UsersService implements IUsersService {
                 .map((undefined, index) => index.toString())
                 .find((entry) => !usedIDs.includes(entry));
             const creation = new User(
-                newID,
                 newUser.name,
                 newUser.email,
                 newUser.password
@@ -50,4 +75,19 @@ export class UsersService implements IUsersService {
             return creation;
         }
     };
+    static users = [
+        new User('Barney Stinson', 'awesome@gnb.com', { pw: 'default' }),
+        new User('Hitchhiker', 'through@the-galaxy.com', {
+            pw: 'default',
+        }),
+        new User('Michael Spivak', 'calculus@analysis.com', {
+            pw: 'default',
+        }),
+        new User('Max Mustermann', 'mymail@service.com', {
+            pw: 'default',
+        }),
+        new User('Perry Mc Guffin', 'mcguffin@yahoo.com', {
+            pw: 'default',
+        }),
+    ];
 }

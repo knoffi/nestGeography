@@ -10,7 +10,7 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { IUsersService } from './IUsersService';
-import { CreateUserDto, GetUserDto, User } from './User';
+import { CreateUserDto, GetUserDto, User } from './users.entity';
 
 @Controller('users')
 export class UsersController {
@@ -22,15 +22,15 @@ export class UsersController {
     @Get('/')
     @UseInterceptors(ClassSerializerInterceptor)
     @Header('Content-Type', 'application/json')
-    allUsers(): GetUserDto[] {
-        return this.service.allUsers();
+    async allUsers(): Promise<GetUserDto[]> {
+        return await this.service.allUsers();
     }
 
     @Get(':id')
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
-    getUser(@Param('id') id: string): GetUserDto {
-        const searchResult = this.service.getUser(id);
+    async getUser(@Param('id') id: string): Promise<GetUserDto> {
+        const searchResult = await this.service.getUser(id);
         if (searchResult instanceof User) {
             return searchResult;
         } else {
