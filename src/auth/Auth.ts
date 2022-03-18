@@ -1,9 +1,8 @@
-import { IsString, Length } from 'class-validator';
+import { IsEmail, IsString, Length } from 'class-validator';
 
 export class ConfirmAuthDto {
-    @IsString()
-    @Length(3, 100)
-    name: string;
+    @IsEmail()
+    email: string;
 
     @IsString()
     @Length(8, 50)

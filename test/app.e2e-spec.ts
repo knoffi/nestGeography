@@ -345,9 +345,11 @@ describe('AppController (e2e)', () => {
         expect(postLogin1.body).toEqual({});
 
         // UNFOUND Name
-        const suffixToAlterName = Math.round(Math.random() * 10000).toString();
+        const suffixForUnfoundMail = Math.round(
+            Math.random() * 10000
+        ).toString();
         const loginNewUser2: ConfirmAuthDto = {
-            name: newUserForLogin.name + suffixToAlterName,
+            email: 'a' + suffixForUnfoundMail + '@notfound.com',
             password: newUserForLogin.password,
         };
         const postLogin2 = await request(app.getHttpServer())
@@ -356,25 +358,33 @@ describe('AppController (e2e)', () => {
             .expect(HttpStatus.UNAUTHORIZED);
         expect(postLogin2.body).toEqual({});
     });
-    it('AUTH by invalid name', async () => {
-        const newUserForLogin: CreateUserDto = {
-            name: 'Ape',
-            email: 'appson@gmail.com',
-            password: 'Some password',
-        };
-        const postNewUser = await request(app.getHttpServer())
-            .post('/users/')
-            .send(newUserForLogin)
-            .expect(HttpStatus.CREATED);
-
+    it('AUTH by invalid email', async () => {
         const loginNewUser: ConfirmAuthDto = {
-            name: 'a',
+            email: 'a',
             password: 'not the password',
         };
         const postLogin = await request(app.getHttpServer())
             .post('/auth/login/')
             .send(loginNewUser)
             .expect(HttpStatus.BAD_REQUEST);
+        expect(postLogin.body.message).toBeTruthy();
+        expect(postLogin.body.message).toBeInstanceOf(Array);
+        expect(postLogin.body.message).toHaveLength(1);
+        expect(postLogin.body.message[0]).toMatch(/email/);
+    });
+    it('AUTH by invalid password length', async () => {
+        const loginNewUser: ConfirmAuthDto = {
+            email: 'absen@gmail.com',
+            password: 'a',
+        };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.BAD_REQUEST);
+        expect(postLogin.body.message).toBeTruthy();
+        expect(postLogin.body.message).toBeInstanceOf(Array);
+        expect(postLogin.body.message).toHaveLength(1);
+        expect(postLogin.body.message[0]).toMatch(/password/);
     });
 });
 
