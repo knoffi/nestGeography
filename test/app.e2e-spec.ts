@@ -333,7 +333,7 @@ describe('AppController (e2e)', () => {
             .send(newUserForLogin)
             .expect(HttpStatus.CREATED);
 
-        // WRONG Password
+        //WRONG Password
         const loginNewUser1: ConfirmAuthDto = {
             ...newUserForLogin,
             password: 'not the password',
@@ -342,9 +342,10 @@ describe('AppController (e2e)', () => {
             .post('/auth/login/')
             .send(loginNewUser1)
             .expect(HttpStatus.UNAUTHORIZED);
-        expect(postLogin1.body).toEqual({});
+        expect(postLogin1.body.message).toBeTruthy();
+        expect(postLogin1.body.message).toMatch(/password/i);
 
-        // UNFOUND Name
+        //UNFOUND email
         const suffixForUnfoundMail = Math.round(
             Math.random() * 10000
         ).toString();
@@ -356,7 +357,8 @@ describe('AppController (e2e)', () => {
             .post('/auth/login/')
             .send(loginNewUser2)
             .expect(HttpStatus.UNAUTHORIZED);
-        expect(postLogin2.body).toEqual({});
+        expect(postLogin2.body.message).toBeTruthy();
+        expect(postLogin2.body.message).toMatch(/email/i);
     });
     it('AUTH by invalid email', async () => {
         const loginNewUser: ConfirmAuthDto = {

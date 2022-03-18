@@ -1,14 +1,13 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getConnection } from 'typeorm';
 import { User } from './users.entity';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
     let service: UsersService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [UsersService],
             imports: [
@@ -25,10 +24,9 @@ describe('UsersService', () => {
         service = module.get<UsersService>(UsersService);
         service.fillRepo();
     });
-    //FRAGE
-    afterEach(() => {
-        let conn = getConnection();
-        return conn.close();
+    afterEach(async () => {
+        await service.clear();
+        await service.fillRepo();
     });
 
     it('should be defined', () => {

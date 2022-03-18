@@ -1,8 +1,10 @@
 import { HttpException } from '@nestjs/common';
+import { ConfirmAuthDto } from 'src/auth/Auth';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
 
 export class UsersServiceMock implements IUsersService {
+    confirm: (login: ConfirmAuthDto) => Promise<true>;
     delete: (id: string) => Promise<void | HttpException>;
     update: (
         id: string,

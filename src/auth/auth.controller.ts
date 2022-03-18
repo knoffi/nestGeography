@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Header,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Post,
+} from '@nestjs/common';
 import { ConfirmAuthDto, PostAuthDto } from './Auth';
 import { AuthService } from './auth.service';
 
@@ -6,9 +14,15 @@ import { AuthService } from './auth.service';
 export class AuthController {
     constructor(private service: AuthService) {}
 
-    @Post('/login')
+    @Post('/login/')
     @HttpCode(HttpStatus.OK)
-    confirm(@Body() login: ConfirmAuthDto): PostAuthDto {
-        return this.service.confirm(login);
+    @Header('Content-Type', 'application/json')
+    async confirm(@Body() login: ConfirmAuthDto): Promise<PostAuthDto> {
+        const confirmation = await this.service.confirm(login);
+        if (confirmation instanceof HttpException) {
+            throw confirmation;
+        } else {
+            return confirmation;
+        }
     }
 }
