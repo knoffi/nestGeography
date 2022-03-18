@@ -12,10 +12,8 @@ describe('UsersService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [UsersService],
             imports: [
-                //FRAGE
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
-                    //FRAGE
                     database: 'db',
                     entities: [User],
                     logging: true,

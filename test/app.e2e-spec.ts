@@ -1,5 +1,6 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfirmAuthDto } from 'src/auth/Auth';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { CreateUserDto } from './../src/users/users.entity';
@@ -301,6 +302,79 @@ describe('AppController (e2e)', () => {
             .patch('/users/' + idAfterAdd)
             .send(patchBody)
             .expect(HttpStatus.CONFLICT);
+    });
+    it('AUTH by valid login', async () => {
+        const newUserForLogin: CreateUserDto = {
+            name: 'Billy Jean',
+            email: 'michael@gmail.com',
+            password: 'Is not my lover',
+        };
+        const postNewUser = await request(app.getHttpServer())
+            .post('/users/')
+            .send(newUserForLogin)
+            .expect(HttpStatus.CREATED);
+
+        const loginNewUser: ConfirmAuthDto = { ...newUserForLogin };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.OK);
+        expect(postLogin.body.token).toBeTruthy();
+        expect(typeof postLogin.body.token === 'string').toBeTruthy();
+    });
+    it('AUTH by wrong password or unfound name', async () => {
+        const newUserForLogin: CreateUserDto = {
+            name: 'Lucy',
+            email: 'beatles@gmail.com',
+            password: 'In the sky with diamonds',
+        };
+        const postNewUser = await request(app.getHttpServer())
+            .post('/users/')
+            .send(newUserForLogin)
+            .expect(HttpStatus.CREATED);
+
+        // WRONG Password
+        const loginNewUser1: ConfirmAuthDto = {
+            ...newUserForLogin,
+            password: 'not the password',
+        };
+        const postLogin1 = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser1)
+            .expect(HttpStatus.UNAUTHORIZED);
+        expect(postLogin1.body).toEqual({});
+
+        // UNFOUND Name
+        const suffixToAlterName = Math.round(Math.random() * 10000).toString();
+        const loginNewUser2: ConfirmAuthDto = {
+            name: newUserForLogin.name + suffixToAlterName,
+            password: newUserForLogin.password,
+        };
+        const postLogin2 = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser2)
+            .expect(HttpStatus.UNAUTHORIZED);
+        expect(postLogin2.body).toEqual({});
+    });
+    it('AUTH by invalid name', async () => {
+        const newUserForLogin: CreateUserDto = {
+            name: 'Ape',
+            email: 'appson@gmail.com',
+            password: 'Some password',
+        };
+        const postNewUser = await request(app.getHttpServer())
+            .post('/users/')
+            .send(newUserForLogin)
+            .expect(HttpStatus.CREATED);
+
+        const loginNewUser: ConfirmAuthDto = {
+            name: 'a',
+            password: 'not the password',
+        };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.BAD_REQUEST);
     });
 });
 
