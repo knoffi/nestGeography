@@ -1,5 +1,6 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfirmAuthDto } from 'src/auth/Auth';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { CreateUserDto } from './../src/users/users.entity';
@@ -301,6 +302,91 @@ describe('AppController (e2e)', () => {
             .patch('/users/' + idAfterAdd)
             .send(patchBody)
             .expect(HttpStatus.CONFLICT);
+    });
+    it('AUTH by valid login', async () => {
+        const newUserForLogin: CreateUserDto = {
+            name: 'Billy Jean',
+            email: 'michael@gmail.com',
+            password: 'Is not my lover',
+        };
+        const postNewUser = await request(app.getHttpServer())
+            .post('/users/')
+            .send(newUserForLogin)
+            .expect(HttpStatus.CREATED);
+
+        const loginNewUser: ConfirmAuthDto = { ...newUserForLogin };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.OK);
+        expect(postLogin.body.token).toBeTruthy();
+        expect(typeof postLogin.body.token === 'string').toBeTruthy();
+    });
+    it('AUTH by wrong password or unfound name', async () => {
+        const newUserForLogin: CreateUserDto = {
+            name: 'Lucy',
+            email: 'beatles@gmail.com',
+            password: 'In the sky with diamonds',
+        };
+        const postNewUser = await request(app.getHttpServer())
+            .post('/users/')
+            .send(newUserForLogin)
+            .expect(HttpStatus.CREATED);
+
+        //WRONG Password
+        const loginNewUser1: ConfirmAuthDto = {
+            ...newUserForLogin,
+            password: 'not the password',
+        };
+        const postLogin1 = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser1)
+            .expect(HttpStatus.UNAUTHORIZED);
+        expect(postLogin1.body.message).toBeTruthy();
+        expect(postLogin1.body.message).toMatch(/password/i);
+
+        //UNFOUND email
+        const suffixForUnfoundMail = Math.round(
+            Math.random() * 10000
+        ).toString();
+        const loginNewUser2: ConfirmAuthDto = {
+            email: 'a' + suffixForUnfoundMail + '@notfound.com',
+            password: newUserForLogin.password,
+        };
+        const postLogin2 = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser2)
+            .expect(HttpStatus.UNAUTHORIZED);
+        expect(postLogin2.body.message).toBeTruthy();
+        expect(postLogin2.body.message).toMatch(/email/i);
+    });
+    it('AUTH by invalid email', async () => {
+        const loginNewUser: ConfirmAuthDto = {
+            email: 'a',
+            password: 'not the password',
+        };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.BAD_REQUEST);
+        expect(postLogin.body.message).toBeTruthy();
+        expect(postLogin.body.message).toBeInstanceOf(Array);
+        expect(postLogin.body.message).toHaveLength(1);
+        expect(postLogin.body.message[0]).toMatch(/email/);
+    });
+    it('AUTH by invalid password length', async () => {
+        const loginNewUser: ConfirmAuthDto = {
+            email: 'absen@gmail.com',
+            password: 'a',
+        };
+        const postLogin = await request(app.getHttpServer())
+            .post('/auth/login/')
+            .send(loginNewUser)
+            .expect(HttpStatus.BAD_REQUEST);
+        expect(postLogin.body.message).toBeTruthy();
+        expect(postLogin.body.message).toBeInstanceOf(Array);
+        expect(postLogin.body.message).toHaveLength(1);
+        expect(postLogin.body.message[0]).toMatch(/password/);
     });
 });
 
