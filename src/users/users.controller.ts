@@ -2,15 +2,25 @@ import {
     Body,
     ClassSerializerInterceptor,
     Controller,
+    Delete,
     Get,
     Header,
+    HttpCode,
+    HttpException,
+    HttpStatus,
     Inject,
     Param,
+    Patch,
     Post,
     UseInterceptors,
 } from '@nestjs/common';
 import { IUsersService } from './IUsersService';
-import { CreateUserDto, GetUserDto, User } from './User';
+import {
+    CreateUserDto,
+    CreateUserPartialDto,
+    GetUserDto,
+    User,
+} from './users.entity';
 
 @Controller('users')
 export class UsersController {
@@ -22,15 +32,15 @@ export class UsersController {
     @Get('/')
     @UseInterceptors(ClassSerializerInterceptor)
     @Header('Content-Type', 'application/json')
-    allUsers(): GetUserDto[] {
-        return this.service.allUsers();
+    async allUsers(): Promise<GetUserDto[]> {
+        return await this.service.allUsers();
     }
 
     @Get(':id')
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
-    getUser(@Param('id') id: string): GetUserDto {
-        const searchResult = this.service.getUser(id);
+    async getUser(@Param('id') id: string): Promise<GetUserDto> {
+        const searchResult = await this.service.getUser(id);
         if (searchResult instanceof User) {
             return searchResult;
         } else {
@@ -41,12 +51,35 @@ export class UsersController {
     @Post('/')
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
-    createUser(@Body() body: CreateUserDto): GetUserDto {
-        const creation = this.service.create(body);
+    async createUser(@Body() body: CreateUserDto): Promise<GetUserDto> {
+        const creation = await this.service.create(body);
         if (creation instanceof User) {
             return creation;
         } else {
             throw creation;
+        }
+    }
+    @Delete(':id')
+    @Header('Content-Type', 'application/json')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async delete(@Param('id') id: string): Promise<void> {
+        const deletion = await this.service.delete(id);
+        if (deletion instanceof HttpException) {
+            throw deletion;
+        }
+    }
+    @Patch(':id')
+    @Header('Content-Type', 'application/json')
+    @UseInterceptors(ClassSerializerInterceptor)
+    async update(
+        @Param('id') id: string,
+        @Body() updates: CreateUserPartialDto
+    ): Promise<GetUserDto | HttpException> {
+        const update = await this.service.update(id, updates);
+        if (update instanceof User) {
+            return update;
+        } else {
+            throw update;
         }
     }
 }
