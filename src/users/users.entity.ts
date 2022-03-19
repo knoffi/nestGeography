@@ -76,6 +76,14 @@ export class User {
         this.password = typeof password === 'string' ? password : '123456789';
     }
 
+    updatedCopy(updates: Partial<User>) {
+        return new User(
+            updates.name || this.name,
+            updates.email || this.name,
+            updates.password || this.password
+        );
+    }
+
     static stubBuild(partialUser: Partial<User>): User {
         return new User(
             partialUser.name || 'Testo McTesting',

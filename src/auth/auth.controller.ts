@@ -3,11 +3,12 @@ import {
     Controller,
     Header,
     HttpCode,
-    HttpException,
     HttpStatus,
     Post,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { ConfirmAuthDto, PostAuthDto } from './Auth';
+import { AuthServiceErrors } from './auth.serrice.errors';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -19,8 +20,8 @@ export class AuthController {
     @Header('Content-Type', 'application/json')
     async confirm(@Body() login: ConfirmAuthDto): Promise<PostAuthDto> {
         const confirmation = await this.service.confirm(login);
-        if (confirmation instanceof HttpException) {
-            throw confirmation;
+        if (confirmation === AuthServiceErrors.authFail) {
+            throw new UnauthorizedException(confirmation);
         } else {
             return confirmation;
         }

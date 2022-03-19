@@ -19,16 +19,12 @@ export class PokeService implements IPokeService {
     };
 
     async getPokeAttack(id: string): Promise<NameHolder> {
-        try {
-            const moveNames = await firstValueFrom(
-                this.httpService
-                    .get<Moves>('https://pokeapi.co/api/v2/pokemon/' + id)
-                    .pipe(map((res) => res.data.moves))
-            );
-            return this.randomEntry(moveNames, PokeService.DEFAULT_MOVE).move;
-        } catch (error) {
-            console.log(error);
-        }
+        const moveNames = await firstValueFrom<MoveHolder[]>(
+            this.httpService
+                .get<Moves>('https://pokeapi.co/api/v2/pokemon/' + id)
+                .pipe(map((res) => res.data.moves))
+        );
+        return this.randomEntry(moveNames, PokeService.DEFAULT_MOVE).move;
     }
     randomEntry<T>(array: Array<T>, defaultValue: T): T {
         if (array.length === 0) {

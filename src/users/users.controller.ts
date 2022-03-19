@@ -1,14 +1,16 @@
 import {
+    BadRequestException,
     Body,
     ClassSerializerInterceptor,
+    ConflictException,
     Controller,
     Delete,
     Get,
     Header,
     HttpCode,
-    HttpException,
     HttpStatus,
     Inject,
+    NotFoundException,
     Param,
     Patch,
     Post,
@@ -19,8 +21,8 @@ import {
     CreateUserDto,
     CreateUserPartialDto,
     GetUserDto,
-    User,
 } from './users.entity';
+import { UsersServiceErrors } from './users.service.errors';
 
 @Controller('users')
 export class UsersController {
@@ -40,11 +42,11 @@ export class UsersController {
     @Header('Content-Type', 'application/json')
     @UseInterceptors(ClassSerializerInterceptor)
     async getUser(@Param('id') id: string): Promise<GetUserDto> {
-        const searchResult = await this.service.getUser(id);
-        if (searchResult instanceof User) {
-            return searchResult;
+        const selection = await this.service.getUser(id);
+        if (selection === UsersServiceErrors.idNotFound) {
+            throw new NotFoundException(selection);
         } else {
-            throw searchResult;
+            return selection;
         }
     }
 
@@ -53,10 +55,10 @@ export class UsersController {
     @UseInterceptors(ClassSerializerInterceptor)
     async createUser(@Body() body: CreateUserDto): Promise<GetUserDto> {
         const creation = await this.service.create(body);
-        if (creation instanceof User) {
-            return creation;
+        if (creation === UsersServiceErrors.doubleEmail) {
+            throw new ConflictException(creation);
         } else {
-            throw creation;
+            return creation;
         }
     }
     @Delete(':id')
@@ -64,8 +66,8 @@ export class UsersController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async delete(@Param('id') id: string): Promise<void> {
         const deletion = await this.service.delete(id);
-        if (deletion instanceof HttpException) {
-            throw deletion;
+        if (deletion === UsersServiceErrors.idNotFound) {
+            throw new NotFoundException(deletion);
         }
     }
     @Patch(':id')
@@ -74,12 +76,17 @@ export class UsersController {
     async update(
         @Param('id') id: string,
         @Body() updates: CreateUserPartialDto
-    ): Promise<GetUserDto | HttpException> {
+    ): Promise<GetUserDto> {
         const update = await this.service.update(id, updates);
-        if (update instanceof User) {
-            return update;
-        } else {
-            throw update;
+        switch (update) {
+            case UsersServiceErrors.doubleEmail:
+                throw new ConflictException(update);
+            case UsersServiceErrors.emptyUpdate:
+                throw new BadRequestException(update);
+            case UsersServiceErrors.idNotFound:
+                throw new BadRequestException(update);
+            default:
+                return update;
         }
     }
 }
