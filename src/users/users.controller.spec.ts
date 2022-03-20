@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { UsersController } from './users.controller';
-import { User } from './users.entity';
+import { CreateUserDto, User } from './users.entity';
 import { UsersServiceMock } from './users.service.mock';
 
 describe('UsersController', () => {
@@ -9,7 +9,6 @@ describe('UsersController', () => {
     beforeEach(async () => {
         const moduleRef = await Test.createTestingModule({
             controllers: [UsersController],
-            // is for injectable providing (for controller) during tests
             providers: [
                 { useClass: UsersServiceMock, provide: 'IUsersService' },
             ],
@@ -21,21 +20,21 @@ describe('UsersController', () => {
     it('should be defined', () => {
         expect(controller).toBeDefined();
     });
-    it('get users', () => {
-        const responseBody = controller.allUsers();
+    it('get users', async () => {
+        const responseBody = await controller.allUsers();
         expect(responseBody).toEqual(UsersServiceMock.stubs.allUsers);
     });
-    it('get user by id', () => {
-        const responseBody = controller.getUser('69');
+    it('get user by id', async () => {
+        const responseBody = await controller.getUser('69');
         expect(responseBody).toEqual(UsersServiceMock.stubs.user);
     });
-    it('post valid user', () => {
-        const creationData: Omit<User, 'id'> = {
-            email: 'test@gmail.com',
-            name: 'peter',
-            password: '191919191',
-        };
-        const responseBody = controller.createUser(creationData);
+    it('post valid user', async () => {
+        const creationData: CreateUserDto = new User(
+            'peter',
+            'test@gmail.com',
+            '191919191'
+        );
+        const responseBody = await controller.createUser(creationData);
         expect(responseBody instanceof User).toBeTruthy();
         Object.keys(creationData).forEach((prop) => {
             expect(responseBody[prop]).toEqual(creationData[prop]);

@@ -85,10 +85,12 @@ export class User {
     }
 
     static stubBuild(partialUser: Partial<User>): User {
-        return new User(
+        const stubUser = new User(
             partialUser.name || 'Testo McTesting',
             partialUser.email || 'tester@gmail.com',
             partialUser.password || 'secret'
         );
+        stubUser.id = '12';
+        return stubUser;
     }
 }

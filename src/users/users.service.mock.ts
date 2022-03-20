@@ -6,13 +6,9 @@ export class UsersServiceMock implements IUsersService {
     confirm: (login: ConfirmAuthDto) => Promise<true>;
     delete: (id: string) => Promise<void>;
     update: (id: string, updates: Partial<CreateUserDto>) => Promise<User>;
-    private static stubUser: User = new User(
-        'Max Mustermann',
-        'muster@mail.de',
-        {
-            pw: 'default',
-        }
-    );
+    private static stubUser = new User('Max Mustermann', 'muster@mail.de', {
+        pw: 'default',
+    });
     static stubs = {
         user: UsersServiceMock.stubUser,
         allUsers: [UsersServiceMock.stubUser],

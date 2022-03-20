@@ -58,7 +58,7 @@ export class UsersService implements IUsersService {
                 await this.repository.save(UsersService.users);
             }
         } catch (e) {
-            console.log(e);
+            console.log('#############################');
         }
     };
 
@@ -66,10 +66,12 @@ export class UsersService implements IUsersService {
         await this.repository.clear();
     };
 
-    getValidID = async () => {
+    getValidID = async (): Promise<
+        { id: string } | UsersServiceErrors.emptyDB
+    > => {
         const user = await this.repository.findOne();
         if (user) {
-            return user.id;
+            return { id: user.id };
         } else {
             return UsersServiceErrors.emptyDB;
         }

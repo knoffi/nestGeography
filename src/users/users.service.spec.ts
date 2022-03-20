@@ -1,8 +1,8 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { UsersService } from './users.service';
+import { UsersServiceErrors } from './users.service.errors';
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -15,14 +15,14 @@ describe('UsersService', () => {
                     type: 'sqlite',
                     database: 'db',
                     entities: [User],
-                    logging: true,
+                    logging: false,
                     synchronize: true,
                 }),
+                TypeOrmModule.forFeature([User]),
             ],
         }).compile();
 
         service = module.get<UsersService>(UsersService);
-        service.fillRepo();
     });
     afterEach(async () => {
         await service.clear();
@@ -32,49 +32,52 @@ describe('UsersService', () => {
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
-    it('all users', async () => {
+    it('all users after fill', async () => {
         const users = await service.allUsers();
         expect(users.length).toBeGreaterThan(0);
     });
-    it('user by valid id', async () => {
-        const validID = await service.getValidID();
-        const user = await service.getUser(validID);
-        expect(user instanceof User).toBeTruthy();
+    it('all users after clear', async () => {
+        const clearRepo = await service.clear();
+        const users = await service.allUsers();
+        expect(users.length).toEqual(0);
     });
-    it('create valid user', () => {
+    it('user by valid id', async () => {
+        const idWrapper = await service.getValidID();
+        expect(idWrapper !== UsersServiceErrors.emptyDB);
+        if (idWrapper !== UsersServiceErrors.emptyDB) {
+            const user = await service.getUser(idWrapper.id);
+            expect(user instanceof User).toBeTruthy();
+        }
+    });
+    it('create valid user', async () => {
         const request = {
             name: 'Max',
-            email: 'maxmustermann@unitTest.com',
+            email: 'totalrandomshit2@unitTest.com',
             password: '123456789',
         };
-        const creation = service.create(request);
+        const creation = await service.create(request);
         expect(creation instanceof User).toBeTruthy();
         if (creation instanceof User) {
             Object.keys(request).forEach((prop) =>
                 expect(request[prop]).toEqual(creation[prop])
             );
 
-            const selection = service.getUser(creation.id);
+            const selection = await service.getUser(creation.id);
             expect(selection instanceof User).toBeTruthy();
             Object.keys(request).forEach((prop) =>
                 expect(request[prop]).toEqual(selection[prop])
             );
         }
     });
-    it('create same user twice', () => {
-        // TODO: needs to work independent of previous test, THUS clear/reset users
+    it('create same user twice', async () => {
         const request = {
             name: 'Dobby',
             email: 'dobby@unitTest.com',
             password: '123456789',
         };
-        const creation = service.create(request);
-        const secondCreation = service.create(request);
+        const creation = await service.create(request);
+        const secondCreation = await service.create(request);
         expect(creation instanceof User).toBeTruthy();
-        expect(secondCreation instanceof HttpException).toBeTruthy();
-        if (secondCreation instanceof HttpException) {
-            expect(secondCreation.getStatus()).toEqual(HttpStatus.CONFLICT);
-            expect(secondCreation.message).toMatch(/email/i);
-        }
+        expect(secondCreation).toEqual(UsersServiceErrors.doubleEmail);
     });
 });
