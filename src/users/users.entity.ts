@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
 import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
@@ -93,4 +94,19 @@ export class User {
         stubUser.id = '12';
         return stubUser;
     }
+}
+
+@ObjectType()
+export class UserNode implements IUser {
+    @Field()
+    id: string;
+
+    @Field()
+    name: string;
+
+    @Field()
+    email: string;
+
+    @Field()
+    password: string;
 }
