@@ -10,6 +10,9 @@ export class ConfirmAuthDto {
 }
 
 export class PostAuthDto {
+    constructor(token: string) {
+        this.token = token;
+    }
     @IsString()
     token: string;
 }

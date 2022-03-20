@@ -8,7 +8,8 @@ export function IsCountryId(
     property: string,
     validationOptions?: ValidationOptions
 ) {
-    return function (object: unknown, propertyName: string) {
+    //would love to use unknown here...
+    return function (object: any, propertyName: string) {
         registerDecorator({
             name: 'isCountryId',
             target: object.constructor,

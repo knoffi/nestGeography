@@ -76,11 +76,21 @@ export class User {
         this.password = typeof password === 'string' ? password : '123456789';
     }
 
-    static stubBuild(partialUser: Partial<User>): User {
+    updatedCopy(updates: Partial<User>) {
         return new User(
+            updates.name || this.name,
+            updates.email || this.name,
+            updates.password || this.password
+        );
+    }
+
+    static stubBuild(partialUser: Partial<User>): User {
+        const stubUser = new User(
             partialUser.name || 'Testo McTesting',
             partialUser.email || 'tester@gmail.com',
             partialUser.password || 'secret'
         );
+        stubUser.id = '12';
+        return stubUser;
     }
 }

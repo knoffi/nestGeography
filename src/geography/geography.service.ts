@@ -12,19 +12,15 @@ export interface IGeographyService {
 export class GeographyService implements IGeographyService {
     constructor(private readonly http: HttpService) {}
     async getCountry(id: string): Promise<CountryHolder> {
-        try {
-            const graphQLQuery =
-                'query{country(code:"' + id + '"){currency,capital,name} }';
-            const res = await firstValueFrom(
-                this.http
-                    .post<Response>('https://countries.trevorblades.com/', {
-                        query: graphQLQuery,
-                    })
-                    .pipe(map((res) => res.data))
-            );
-            return res.data;
-        } catch (error) {
-            console.log(JSON.stringify(error));
-        }
+        const graphQLQuery =
+            'query{country(code:"' + id + '"){currency,capital,name} }';
+        const res = await firstValueFrom(
+            this.http
+                .post<Response>('https://countries.trevorblades.com/', {
+                    query: graphQLQuery,
+                })
+                .pipe(map((res) => res.data))
+        );
+        return res.data;
     }
 }

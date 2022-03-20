@@ -1,145 +1,111 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfirmAuthDto } from 'src/auth/Auth';
-import { FindManyOptions, QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
+import { UsersServiceErrors } from './users.service.errors';
 
 @Injectable()
 export class UsersService implements IUsersService {
     constructor(@InjectRepository(User) private repository: Repository<User>) {}
-
     confirm = async (login: ConfirmAuthDto) => {
-        try {
-            const userOfLogin = await this.repository.findOne({
-                where: { ...login },
-            });
+        const userOfLogin = await this.repository.findOne({
+            where: { ...login },
+        });
 
-            const loginFailed = !userOfLogin;
-            if (loginFailed) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (error) {
-            console.log(error);
+        const loginFailed = !userOfLogin;
+        if (loginFailed) {
+            return false;
+        } else {
+            return true;
         }
     };
-    update = async (
-        id: string,
-        updates: Partial<CreateUserDto>
-    ): Promise<User | HttpException> => {
+    update = async (id: string, updates: Partial<CreateUserDto>) => {
         const updateIsEmpty = Object.keys(updates).length === 0;
         if (updateIsEmpty) {
-            return new HttpException(
-                'Empty updates are not allowed',
-                HttpStatus.BAD_REQUEST
-            );
+            return UsersServiceErrors.emptyUpdate;
         } else {
-            const idExists =
-                0 < (await this.repository.count({ where: { id: id } }));
-            if (idExists) {
-                try {
-                    await this.repository.update({ id: id }, updates);
-                    const updatedUser = await this.repository.findOne({
-                        where: { id: id },
-                    });
-                    return updatedUser;
-                } catch (e) {
-                    if (
-                        e instanceof QueryFailedError &&
-                        e.message.match(
-                            / UNIQUE constraint failed: user.email/i
-                        )
-                    ) {
-                        return new HttpException(
-                            'Email is already used',
-                            HttpStatus.CONFLICT
-                        );
-                    }
-                }
+            //NOTE: can I update even if id is wrong? or do I get an exception?
+            const oldUser = await this.repository.findOne(id);
+            if (!oldUser) {
+                return UsersServiceErrors.idNotFound;
             } else {
-                return new HttpException(
-                    'Id not found',
-                    HttpStatus.BAD_REQUEST
-                );
+                const newEmailIsDouble =
+                    updates.email && this.newEmailIsDouble(updates.email, id);
+                if (newEmailIsDouble) {
+                    return UsersServiceErrors.doubleEmail;
+                } else {
+                    await this.repository.update(id, updates);
+                    return oldUser.updatedCopy(updates);
+                }
             }
         }
     };
+
+    private newEmailIsDouble = async (email: string, ignoreId: string) => {
+        return (
+            await this.repository.find({
+                where: { email },
+            })
+        ).some((user) => user.id !== ignoreId);
+    };
+
     fillRepo = async () => {
         try {
-            const repoEmpty = (await this.repository.count()) === 0;
+            const repoEmpty = !(await this.repository.findOne());
             if (repoEmpty) {
                 await this.repository.save(UsersService.users);
             }
         } catch (e) {
-            console.log(e);
+            console.log('#############################');
         }
     };
+
     clear = async () => {
         await this.repository.clear();
     };
-    getValidID = async () => {
-        try {
-            const user = await this.repository.findOne();
-            return user.id;
-        } catch (e) {
-            console.log(e);
+
+    getValidID = async (): Promise<
+        { id: string } | UsersServiceErrors.emptyDB
+    > => {
+        const user = await this.repository.findOne();
+        if (user) {
+            return { id: user.id };
+        } else {
+            return UsersServiceErrors.emptyDB;
         }
     };
-    allUsers = async () => {
-        try {
-            return await this.repository.find();
-        } catch (e) {
-            console.log(e);
-        }
-    };
-    getUser = async (id: string) => {
-        try {
-            const condition: FindManyOptions<User> = { where: { id } };
-            const user = await this.repository.findOne(condition);
-            if (user) {
-                return user;
-            } else {
-                return new HttpException(
-                    'User Id Not Found',
-                    HttpStatus.NOT_FOUND
-                );
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    };
-    create = async (newUser: CreateUserDto) => {
+    allUsers = async () => await this.repository.find();
+
+    getUser = async (id: string) =>
+        (await this.repository.findOne(id)) || UsersServiceErrors.idNotFound;
+
+    create = async (
+        newUser: CreateUserDto
+    ): Promise<User | UsersServiceErrors.doubleEmail> => {
         const creation = new User(
             newUser.name,
             newUser.email,
             newUser.password
         );
-        try {
-            const savedCreation = await this.repository.save(creation);
-            return savedCreation;
-        } catch (e) {
-            if (
-                e instanceof QueryFailedError &&
-                e.message.match(/UNIQUE constraint failed/i)
-            ) {
-                return new HttpException(
-                    'Email is already used',
-                    HttpStatus.CONFLICT
-                );
-            } else {
-                console.log(e.name);
-                console.log(e.message);
-            }
+        const emailExistsAlready =
+            (await this.repository.count({ where: { email: newUser.email } })) >
+            0;
+        if (emailExistsAlready) {
+            return UsersServiceErrors.doubleEmail;
+        } else {
+            return await this.repository.save(creation);
         }
     };
-    delete = async (id: string): Promise<void | HttpException> => {
+    delete = async (
+        id: string
+    ): Promise<void | UsersServiceErrors.idNotFound> => {
         const deletionTarget = await this.repository.findOne({ where: { id } });
         if (deletionTarget) {
             await this.repository.remove(deletionTarget);
         } else {
-            return new HttpException('Id not found', HttpStatus.NOT_FOUND);
+            return UsersServiceErrors.idNotFound;
         }
     };
     static users = [

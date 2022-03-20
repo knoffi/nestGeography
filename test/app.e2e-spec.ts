@@ -278,12 +278,12 @@ describe('AppController (e2e)', () => {
     });
     it('USERS PATCH by email which is already used', async () => {
         const addFirstBody: CreateUserDto = {
-            name: 'Patcher6',
+            name: 'Patcher',
             email: 'patcher6@gmail.com',
             password: 'IamBlondie',
         };
         const addSecondBody: CreateUserDto = {
-            name: 'Patcher7',
+            name: 'Patcher',
             email: 'patcher7@gmail.com',
             password: 'IamBlondie',
         };
@@ -291,7 +291,7 @@ describe('AppController (e2e)', () => {
             .post('/users/')
             .send(addFirstBody)
             .expect(HttpStatus.CREATED);
-        const idAfterAdd = addFirst.body.id;
+        const firstID = addFirst.body.id;
         const addSecond = await request(app.getHttpServer())
             .post('/users/')
             .send(addSecondBody)
@@ -299,7 +299,7 @@ describe('AppController (e2e)', () => {
 
         const patchBody = { email: addSecondBody.email };
         const patch = await request(app.getHttpServer())
-            .patch('/users/' + idAfterAdd)
+            .patch('/users/' + firstID)
             .send(patchBody)
             .expect(HttpStatus.CONFLICT);
     });

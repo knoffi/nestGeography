@@ -1,6 +1,7 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { IUsersService } from './../users/IUsersService';
 import { ConfirmAuthDto, PostAuthDto } from './Auth';
+import { AuthServiceErrors } from './auth.serrice.errors';
 
 @Injectable()
 export class AuthService {
@@ -8,16 +9,15 @@ export class AuthService {
 
     constructor(@Inject('IUsersService') private usersService: IUsersService) {}
 
-    async confirm(login: ConfirmAuthDto): Promise<PostAuthDto | HttpException> {
+    async confirm(
+        login: ConfirmAuthDto
+    ): Promise<PostAuthDto | AuthServiceErrors> {
         const loginConfirmed = await this.usersService.confirm(login);
         if (loginConfirmed) {
             const token = this.generateToken();
-            return { token };
+            return new PostAuthDto(token);
         } else {
-            return new HttpException(
-                'Email not found or password mismatch',
-                HttpStatus.UNAUTHORIZED
-            );
+            return AuthServiceErrors.authFail;
         }
     }
 
