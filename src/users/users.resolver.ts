@@ -1,5 +1,5 @@
 import { Inject, NotFoundException } from '@nestjs/common';
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserNode } from './users.entity';
 import { UsersService } from './users.service';
 import { UsersServiceErrors } from './users.service.errors';
@@ -25,5 +25,13 @@ export class UsersResolver {
     async getAllUser() {
         const users = await this.service.allUsers();
         return users;
+    }
+    @Mutation(() => String, { name: 'remove' })
+    async removeUser(@Args('id') id: string) {
+        const deletion = await this.service.delete(id);
+        if (deletion === UsersServiceErrors.idNotFound) {
+            throw new NotFoundException(deletion);
+        }
+        return 'success';
     }
 }

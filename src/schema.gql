@@ -13,3 +13,7 @@ type Query {
   user(id: String!): UserNode!
   users: [UserNode!]!
 }
+
+type Mutation {
+  remove(id: String!): String!
+}
