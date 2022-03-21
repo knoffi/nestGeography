@@ -19,4 +19,11 @@ export class UsersResolver {
             return user;
         }
     }
+    @Query((returns) => [UserNode], { name: 'users' })
+    // use ( 'id' , { type : () => Int } ) if id is supposed to be integer
+    // make a funny query where we use @ArgsType() [ this would also need an extended UsersService]
+    async getAllUser() {
+        const users = await this.service.allUsers();
+        return users;
+    }
 }
