@@ -1,5 +1,7 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { Test, TestingModule } from '@nestjs/testing';
+import { GraphQLSchema } from 'graphql';
 import { ConfirmAuthDto } from 'src/auth/Auth';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
@@ -9,6 +11,7 @@ import { UsersService } from './../src/users/users.service';
 describe('AppController (e2e)', () => {
     let app: INestApplication;
     let service: UsersService;
+    let schema: GraphQLSchema;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,6 +20,7 @@ describe('AppController (e2e)', () => {
         app = moduleFixture.createNestApplication();
         app.useGlobalPipes(new ValidationPipe());
         await app.init();
+        schema = app.get(GraphQLSchemaHost).schema;
         service = app.get<UsersService>('IUsersService');
     });
     beforeEach(async () => {
@@ -25,6 +29,10 @@ describe('AppController (e2e)', () => {
     });
     afterAll(async () => {
         await app.close();
+    });
+
+    it('GraphQL schema exists', () => {
+        expect(schema).toBeTruthy();
     });
 
     it('USERS GET all', async () => {
