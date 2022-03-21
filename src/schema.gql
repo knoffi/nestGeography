@@ -1,0 +1,33 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserNode {
+  id: String!
+  name: String!
+  email: String!
+  password: String!
+}
+
+type Query {
+  user(id: String!): UserNode!
+  users: [UserNode!]!
+}
+
+type Mutation {
+  remove(id: String!): String!
+  create(newUser: CreateUserInput!): UserNode!
+  update(id: String!, updates: UpdateUserInput!): UserNode!
+}
+
+input CreateUserInput {
+  name: String!
+  password: String!
+  email: String!
+}
+
+input UpdateUserInput {
+  name: String
+  password: String
+  email: String
+}
