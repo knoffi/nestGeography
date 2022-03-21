@@ -1,41 +1,15 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import {
-    Args,
-    Field,
-    InputType,
-    Mutation,
-    Query,
-    Resolver,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserNode } from './users.entity';
+import { CreateUserInput, UpdateUserInput } from './users.input';
 import { UsersService } from './users.service';
 import { UsersServiceErrors } from './users.service.errors';
-@InputType()
-class CreateUserInput {
-    @Field()
-    name: string;
-    @Field()
-    password: string;
-    @Field()
-    email: string;
-}
-@InputType()
-class UpdateUserInput {
-    @Field({ nullable: true })
-    name?: string;
-    @Field({ nullable: true })
-    password?: string;
-    @Field({ nullable: true })
-    email?: string;
-}
-
 @Resolver((of) => UserNode)
 export class UsersResolver {
     constructor(@Inject('IUsersService') private service: UsersService) {}
 
     @Query((returns) => UserNode, { name: 'user' })
     // use ( 'id' , { type : () => Int } ) if id is supposed to be integer
-    // make a funny query where we use @ArgsType() [ this would also need an extended UsersService]
     async getUser(@Args('id') id: string): Promise<UserNode> {
         const user = await this.service.getUser(id);
         if (user === UsersServiceErrors.idNotFound) {
@@ -45,8 +19,6 @@ export class UsersResolver {
         }
     }
     @Query((returns) => [UserNode], { name: 'users' })
-    // use ( 'id' , { type : () => Int } ) if id is supposed to be integer
-    // make a funny query where we use @ArgsType() [ this would also need an extended UsersService]
     async getAllUser(): Promise<UserNode[]> {
         const users = await this.service.allUsers();
         return users;
