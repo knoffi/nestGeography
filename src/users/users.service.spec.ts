@@ -80,4 +80,8 @@ describe('UsersService', () => {
         expect(creation instanceof User).toBeTruthy();
         expect(secondCreation).toEqual(UsersServiceErrors.doubleEmail);
     });
+    it('get users by email substring', async () => {
+        const selection = await service.allUsersByEmail('gnb');
+        expect(selection.length).toBeGreaterThan(0);
+    });
 });

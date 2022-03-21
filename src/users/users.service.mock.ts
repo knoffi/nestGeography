@@ -20,4 +20,5 @@ export class UsersServiceMock implements IUsersService {
     };
     allUsers = async () => UsersServiceMock.stubs.allUsers;
     getUser = async (id: string) => UsersServiceMock.stubs.user;
+    allUsersByEmail: (emailSubstring: string) => Promise<User[]>;
 }

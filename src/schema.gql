@@ -11,7 +11,7 @@ type UserNode {
 
 type Query {
   user(id: String!): UserNode!
-  users: [UserNode!]!
+  users(emailContains: String!): [UserNode!]!
 }
 
 type Mutation {

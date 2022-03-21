@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfirmAuthDto } from 'src/auth/Auth';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { IUsersService } from './IUsersService';
 import { CreateUserDto, User } from './users.entity';
 import { UsersServiceErrors } from './users.service.errors';
@@ -52,13 +52,9 @@ export class UsersService implements IUsersService {
     };
 
     fillRepo = async () => {
-        try {
-            const repoEmpty = !(await this.repository.findOne());
-            if (repoEmpty) {
-                await this.repository.save(UsersService.users);
-            }
-        } catch (e) {
-            console.log('#############################');
+        const repoEmpty = !(await this.repository.findOne());
+        if (repoEmpty) {
+            await this.repository.save(UsersService.users);
         }
     };
 
@@ -77,6 +73,11 @@ export class UsersService implements IUsersService {
         }
     };
     allUsers = async () => await this.repository.find();
+
+    allUsersByEmail = async (emailSubstring: string) =>
+        await this.repository.find({
+            where: { email: Like('%' + emailSubstring + '%') },
+        });
 
     getUser = async (id: string) =>
         (await this.repository.findOne(id)) || UsersServiceErrors.idNotFound;

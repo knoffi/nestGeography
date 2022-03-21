@@ -19,4 +19,5 @@ export interface IUsersService {
         | UsersServiceErrors.emptyUpdate
     >;
     confirm: (login: ConfirmAuthDto) => Promise<boolean>;
+    allUsersByEmail: (emailSubstring: string) => Promise<User[]>;
 }

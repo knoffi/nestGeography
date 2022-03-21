@@ -23,6 +23,13 @@ export class UsersResolver {
         const users = await this.service.allUsers();
         return users;
     }
+
+    @Query((returns) => [UserNode], { name: 'users' })
+    async getUsersByEmail(@Args('emailContains') emailSubstring: string) {
+        const selection = await this.service.allUsersByEmail(emailSubstring);
+        return selection;
+    }
+
     @Mutation(() => String, { name: 'remove' })
     async removeUser(@Args('id') id: string): Promise<'success'> {
         const deletion = await this.service.delete(id);
